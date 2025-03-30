@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/countdownFragment">
+
+    <fragment
+        android:id="@+id/countdownFragment"
+        android:name="com.chouchou.ipredict.ui.countdown.CountdownFragment"
+        android:label="倒计时"
+        tools:layout="@layout/fragment_countdown" />
+
+    <fragment
+        android:id="@+id/datesFragment"
+        android:name="com.chouchou.ipredict.ui.dates.DatesFragment"
+        android:label="日期"
+        tools:layout="@layout/fragment_dates" />
+
+    <fragment
+        android:id="@+id/analysisFragment"
+        android:name="com.chouchou.ipredict.ui.analysis.AnalysisFragment"
+        android:label="图表"
+        tools:layout="@layout/fragment_analysis" />
+</navigation>
