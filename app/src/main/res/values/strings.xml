@@ -32,4 +32,12 @@
     <string name="import_fail">导入失败: %1$s</string>
     <string name="import_no_data">没有找到日期数据</string>
     <string name="choose_file">选择文件</string>
+
+    <!--添加日期-->
+    <style name="ThemeOverlay.DatePicker" parent="ThemeOverlay.MaterialComponents.Dialog">
+        <item name="colorPrimary">?attr/colorPrimary</item>
+        <item name="colorOnPrimary">?attr/colorOnPrimary</item>
+        <item name="android:textColorPrimary">?android:attr/textColorPrimary</item>
+        <item name="android:textColorSecondary">?android:attr/textColorSecondary</item>
+    </style>
 </resources>

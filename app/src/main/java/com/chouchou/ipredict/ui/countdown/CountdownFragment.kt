@@ -42,10 +42,11 @@ class CountdownFragment : Fragment() {
         // 观察倒计时天数变化
         viewModel.countdown.observe(viewLifecycleOwner) { countdown ->
             binding.textCountdown.text = countdown.toString()
+        }
 
-            // 计算并更新进度环 (假设平均周期为28天)
-            val averageCycle = 28f
-            val progress = 1f - (countdown.toFloat() / averageCycle).coerceIn(0f, 1f)
+        // 观察周期进度变化，直接使用计算好的进度值
+        viewModel.cycleProgress.observe(viewLifecycleOwner) { progress ->
+            // 直接使用ViewModel计算好的进度值
             binding.progressCycle.setProgress(progress)
         }
 

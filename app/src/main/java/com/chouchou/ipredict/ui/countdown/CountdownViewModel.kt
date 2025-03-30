@@ -93,17 +93,19 @@ class CountdownViewModel(application: Application) : AndroidViewModel(applicatio
             _countdown.value = diffInDays
             _countdownLabel.value = "倒计时"
 
-            // 计算周期进度
+            // 计算周期进度 - 剩余天数与总周期的比例
             val daysPassed = averageCycleDays - diffInDays
-            val progressPercentage = 100f * daysPassed / averageCycleDays
-            _cycleProgress.value = progressPercentage
+            // 使用浮点数计算准确的进度比例，范围从0到1
+            val progress = daysPassed.toFloat() / averageCycleDays.toFloat()
+            // 将进度值直接发送到LiveData，不需要转换为百分比
+            _cycleProgress.value = progress
         } else {
             // 已经超过预期日期
             _countdown.value = -diffInDays
             _countdownLabel.value = "已过期"
 
-            // 设置进度为100%
-            _cycleProgress.value = 100f
+            // 设置进度为100%（1.0f）
+            _cycleProgress.value = 1.0f
         }
     }
 }

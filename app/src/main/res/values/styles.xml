@@ -25,11 +25,4 @@
         <item name="android:textColor">@color/white</item>
         <item name="rippleColor">@color/black</item>
     </style>
-
-    <style name="ThemeOverlay.DatePicker" parent="ThemeOverlay.MaterialComponents.Dialog">
-        <item name="colorPrimary">?attr/colorPrimary</item>
-        <item name="colorOnPrimary">?attr/colorOnPrimary</item>
-        <item name="android:textColorPrimary">?android:attr/textColorPrimary</item>
-        <item name="android:textColorSecondary">?android:attr/textColorSecondary</item>
-    </style>
 </resources>

@@ -17,6 +17,7 @@ import com.chouchou.ipredict.R
 import com.chouchou.ipredict.data.EventDate
 import com.chouchou.ipredict.databinding.DialogAddDateBinding
 import com.chouchou.ipredict.databinding.FragmentDatesBinding
+import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 import java.util.Calendar
@@ -185,32 +186,21 @@ class DatesFragment : Fragment() {
     }
 
     private fun showAddDateDialog() {
-        val dialogBinding = DialogAddDateBinding.inflate(layoutInflater)
-
-        // 设置日期选择器初始为今天
         val today = Calendar.getInstance()
-        dialogBinding.datePicker.init(
-            today.get(Calendar.YEAR),
-            today.get(Calendar.MONTH),
-            today.get(Calendar.DAY_OF_MONTH),
-            null
-        )
 
-        val dialog = AlertDialog.Builder(requireContext())
-            .setView(dialogBinding.root)
-            .setPositiveButton(R.string.confirm) { _, _ ->
-                val calendar = Calendar.getInstance()
-                calendar.set(
-                    dialogBinding.datePicker.year,
-                    dialogBinding.datePicker.month,
-                    dialogBinding.datePicker.dayOfMonth
-                )
-                viewModel.addEventDate(calendar.time)
-            }
-            .setNegativeButton(R.string.cancel, null)
-            .create()
+        val datePickerBuilder = MaterialDatePicker.Builder.datePicker()
+            .setTitleText("选择日期")
+            .setSelection(today.timeInMillis)
 
-        dialog.show()
+        val datePicker = datePickerBuilder.build()
+
+        datePicker.addOnPositiveButtonClickListener { timeInMillis ->
+            val calendar = Calendar.getInstance()
+            calendar.timeInMillis = timeInMillis
+            viewModel.addEventDate(calendar.time)
+        }
+
+        datePicker.show(parentFragmentManager, "DATE_PICKER")
     }
 
     private fun showDeleteConfirmationDialog(eventDate: EventDate, position: Int) {
