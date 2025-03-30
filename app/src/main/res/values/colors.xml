@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 基础颜色 -->
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="dark_gray">#FF121212</color>
+    <color name="light_gray">#FFE0E0E0</color>
+
+    <!-- 浅色主题颜色 -->
+    <color name="background_light">@color/white</color>
+    <color name="surface_light">@color/white</color>
+    <color name="primary_light">@color/black</color>
+    <color name="text_primary_light">@color/black</color>
+    <color name="text_secondary_light">#FF555555</color>
+
+    <!-- 深色主题颜色 -->
+    <color name="background_dark">@color/dark_gray</color>
+    <color name="surface_dark">@color/dark_gray</color>
+    <color name="primary_dark">@color/white</color>
+    <color name="text_primary_dark">@color/white</color>
+    <color name="text_secondary_dark">#FFB0B0B0</color>
+
+    <!-- 图表颜色 - 保留原有的马卡龙色调供图表使用 -->
+    <color name="chart_pink">#F2BED1</color>
+    <color name="chart_green">#86C9B4</color>
+    <color name="chart_yellow">#F8E9B8</color>
+    <color name="chart_blue">#B7D2E4</color>
+    <color name="chart_purple">#E9C5DD</color>
+    <color name="chart_mint">#A5D7D2</color>
+    <color name="chart_peach">#F5C0A0</color>
+    <color name="chart_lime">#D2E8C9</color>
+</resources>

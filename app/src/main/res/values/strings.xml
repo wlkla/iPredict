@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">iPredict</string>
+
+    <!-- 通用 -->
+    <string name="confirm">确定</string>
+    <string name="cancel">取消</string>
+
+    <!-- 日期页面 -->
+    <string name="delete_event_title">删除记录</string>
+    <string name="delete_event_message">确定要删除这条记录吗？</string>
+
+    <!-- 分析页面 -->
+    <string name="title_interval_analysis">周期分析</string>
+    <string name="title_frequency">频率分析</string>
+    <string name="no_data_for_analysis">暂无足够数据进行分析</string>
+
+    <!--左侧导航栏-->
+    <string name="app_description">记录事件日期并预测周期</string>
+    <string name="switch_theme">主题设置</string>
+    <string name="theme_light">浅色主题</string>
+    <string name="theme_dark">深色主题</string>
+    <string name="theme_system">跟随系统</string>
+    <string name="nav_drawer_open">打开导航抽屉</string>
+    <string name="nav_drawer_close">关闭导航抽屉</string>
+</resources>

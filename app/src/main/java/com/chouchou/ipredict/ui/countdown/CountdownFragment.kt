@@ -1,0 +1,55 @@
+package com.chouchou.ipredict.ui.countdown
+
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
+import com.chouchou.ipredict.databinding.FragmentCountdownBinding
+
+class CountdownFragment : Fragment() {
+
+    private var _binding: FragmentCountdownBinding? = null
+    private val binding get() = _binding!!
+
+    private lateinit var viewModel: CountdownViewModel
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        viewModel = ViewModelProvider(this).get(CountdownViewModel::class.java)
+
+        _binding = FragmentCountdownBinding.inflate(inflater, container, false)
+        val root: View = binding.root
+
+        // 观察预期事件日期变化
+        viewModel.nextEventDate.observe(viewLifecycleOwner) {
+            binding.textNextEvent.text = "下一个预期事件日期：$it"
+        }
+
+        // 观察倒计时天数变化
+        viewModel.countdown.observe(viewLifecycleOwner) {
+            binding.textCountdown.text = it.toString()
+        }
+
+        // 观察倒计时标签变化
+        viewModel.countdownLabel.observe(viewLifecycleOwner) {
+            binding.textCountdownLabel.text = it
+        }
+
+        // 更新按钮点击事件
+        binding.buttonUpdate.setOnClickListener {
+            viewModel.recordEvent() // 确保这里调用的方法名与 ViewModel 中定义的一致
+        }
+
+        return root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+}
