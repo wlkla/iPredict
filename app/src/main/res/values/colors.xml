@@ -9,7 +9,7 @@
     <!-- 浅色主题颜色 -->
     <color name="background_light">@color/white</color>
     <color name="surface_light">@color/white</color>
-    <color name="primary_light">@color/black</color>
+    <color name="primary_light">@color/black</color> <!-- 改为黑色 -->
     <color name="text_primary_light">@color/black</color>
     <color name="text_secondary_light">#FF555555</color>
 

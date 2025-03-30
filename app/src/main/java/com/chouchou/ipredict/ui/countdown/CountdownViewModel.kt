@@ -28,6 +28,14 @@ class CountdownViewModel(application: Application) : AndroidViewModel(applicatio
     private val _countdownLabel = MutableLiveData<String>()
     val countdownLabel: LiveData<String> = _countdownLabel
 
+    // 新增：平均周期天数
+    private val _cycleDays = MutableLiveData<Int>()
+    val cycleDays: LiveData<Int> = _cycleDays
+
+    // 新增：当前周期进度
+    private val _cycleProgress = MutableLiveData<Float>()
+    val cycleProgress: LiveData<Float> = _cycleProgress
+
     // 平均周期天数（默认为28天）
     private var averageCycleDays = 28
 
@@ -42,6 +50,7 @@ class CountdownViewModel(application: Application) : AndroidViewModel(applicatio
                     totalDays += TimeUnit.MILLISECONDS.toDays(diff).toInt()
                 }
                 averageCycleDays = totalDays / (dates.size - 1)
+                _cycleDays.value = averageCycleDays
             }
 
             // 获取最新日期
@@ -51,7 +60,7 @@ class CountdownViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
-    // 确保这个方法存在且名称正确
+    // 记录事件方法
     fun recordEvent() {
         // 添加今天的事件记录
         viewModelScope.launch {
@@ -82,11 +91,19 @@ class CountdownViewModel(application: Application) : AndroidViewModel(applicatio
         if (diffInDays >= 0) {
             // 还有天数到预期日期
             _countdown.value = diffInDays
-            _countdownLabel.value = "天"
+            _countdownLabel.value = "倒计时"
+
+            // 计算周期进度
+            val daysPassed = averageCycleDays - diffInDays
+            val progressPercentage = 100f * daysPassed / averageCycleDays
+            _cycleProgress.value = progressPercentage
         } else {
             // 已经超过预期日期
             _countdown.value = -diffInDays
-            _countdownLabel.value = "天已过"
+            _countdownLabel.value = "已过期"
+
+            // 设置进度为100%
+            _cycleProgress.value = 100f
         }
     }
 }

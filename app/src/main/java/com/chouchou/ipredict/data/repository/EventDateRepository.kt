@@ -5,6 +5,8 @@ import androidx.lifecycle.map
 import com.chouchou.ipredict.data.EventDate
 import com.chouchou.ipredict.data.db.EventDateDao
 import com.chouchou.ipredict.data.db.EventDateEntity
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.util.Date
 
 class EventDateRepository(private val eventDateDao: EventDateDao) {
@@ -36,5 +38,14 @@ class EventDateRepository(private val eventDateDao: EventDateDao) {
     // 根据ID删除事件日期
     suspend fun deleteEventDateById(id: Int) {
         eventDateDao.deleteEventDateById(id)
+    }
+
+    // 同步获取所有事件日期(不通过LiveData)
+    suspend fun getAllEventDatesSync(): List<EventDate> {
+        return withContext(Dispatchers.IO) {
+            eventDateDao.getAllEventDatesSync().map { entity ->
+                EventDate(entity.id, entity.date)
+            }
+        }
     }
 }

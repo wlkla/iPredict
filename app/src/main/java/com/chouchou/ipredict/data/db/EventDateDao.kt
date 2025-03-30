@@ -23,4 +23,8 @@ interface EventDateDao {
 
     @Query("DELETE FROM event_dates WHERE id = :id")
     suspend fun deleteEventDateById(id: Int)
+
+    // 添加同步查询方法
+    @Query("SELECT * FROM event_dates ORDER BY date DESC")
+    suspend fun getAllEventDatesSync(): List<EventDateEntity>
 }

@@ -11,8 +11,9 @@
     <string name="delete_event_message">确定要删除这条记录吗？</string>
 
     <!-- 分析页面 -->
-    <string name="title_interval_analysis">周期分析</string>
-    <string name="title_frequency">频率分析</string>
+    <string name="title_interval_analysis">周期折线图</string>
+    <string name="title_bar_title">周期柱状图</string>
+    <string name="title_pie_title">周期饼图</string>
     <string name="no_data_for_analysis">暂无足够数据进行分析</string>
 
     <!--左侧导航栏-->
@@ -23,4 +24,12 @@
     <string name="theme_system">跟随系统</string>
     <string name="nav_drawer_open">打开导航抽屉</string>
     <string name="nav_drawer_close">关闭导航抽屉</string>
+
+    <!-- 导入功能 -->
+    <string name="import_button">导入</string>
+    <string name="import_success">成功导入 %1$d 条记录</string>
+    <string name="import_partial">导入了 %1$d 条记录，%2$d 条无效</string>
+    <string name="import_fail">导入失败: %1$s</string>
+    <string name="import_no_data">没有找到日期数据</string>
+    <string name="choose_file">选择文件</string>
 </resources>

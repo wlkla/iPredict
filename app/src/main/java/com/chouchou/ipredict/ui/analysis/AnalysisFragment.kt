@@ -3,12 +3,9 @@ package com.chouchou.ipredict.ui.analysis
 import android.annotation.SuppressLint
 import android.content.res.Configuration
 import com.github.mikephil.charting.formatter.DefaultValueFormatter
-import com.github.mikephil.charting.components.YAxis
 import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.util.TypedValue
 import android.view.LayoutInflater
@@ -17,7 +14,6 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.chouchou.ipredict.databinding.FragmentAnalysisBinding
-import com.github.mikephil.charting.components.Legend
 import com.github.mikephil.charting.components.LimitLine
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.BarData
@@ -31,6 +27,7 @@ import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import com.github.mikephil.charting.formatter.PercentFormatter
+import com.github.mikephil.charting.utils.ViewPortHandler
 import kotlin.random.Random
 
 class AnalysisFragment : Fragment() {
@@ -55,7 +52,8 @@ class AnalysisFragment : Fragment() {
     // 获取当前主题的文本颜色
     private fun getTextColor(context: Context): Int {
         val typedValue = TypedValue()
-        val result = context.theme.resolveAttribute(android.R.attr.textColorPrimary, typedValue, true)
+        val result =
+            context.theme.resolveAttribute(android.R.attr.textColorPrimary, typedValue, true)
 
         // 记录颜色获取的结果
         Log.d("AnalysisFragment", "获取文本颜色: result = $result, data = ${typedValue.data}")
@@ -73,7 +71,8 @@ class AnalysisFragment : Fragment() {
     // 获取当前主题的次要文本颜色
     private fun getSecondaryTextColor(context: Context): Int {
         val typedValue = TypedValue()
-        val result = context.theme.resolveAttribute(android.R.attr.textColorSecondary, typedValue, true)
+        val result =
+            context.theme.resolveAttribute(android.R.attr.textColorSecondary, typedValue, true)
 
         // 记录颜色获取的结果
         Log.d("AnalysisFragment", "获取次要文本颜色: result = $result, data = ${typedValue.data}")
@@ -121,6 +120,9 @@ class AnalysisFragment : Fragment() {
             setTouchEnabled(true)
             setScaleEnabled(true)
             setPinchZoom(true)
+            setDrawGridBackground(false)
+            setDrawBorders(false)
+            animateX(1000)
 
             // 确保所有文本颜色正确应用
             xAxis.apply {
@@ -129,11 +131,14 @@ class AnalysisFragment : Fragment() {
                 textColor = secondaryTextColor  // 设置X轴文字颜色
                 textSize = 11f
                 labelCount = 5
+                setDrawGridLines(false)
             }
 
             axisLeft.apply {
                 textColor = secondaryTextColor  // 设置Y轴文字颜色
                 textSize = 11f
+                setDrawGridLines(true)
+                gridColor = Color.parseColor("#20000000") // 半透明网格线
             }
 
             axisRight.isEnabled = false
@@ -141,7 +146,7 @@ class AnalysisFragment : Fragment() {
             setNoDataTextColor(themeTextColor)
         }
 
-        // 配置饼图 - 设置主题相关颜色
+        // 配置饼图 - 设置主题相关颜色，并增大饼图半径
         with(binding.pieChart) {
             description.isEnabled = false
             setUsePercentValues(true)
@@ -154,11 +159,17 @@ class AnalysisFragment : Fragment() {
             setDrawCenterText(false)
             setNoDataTextColor(themeTextColor)
 
-            // 调整饼图大小参数
-            holeRadius = 30f
-            transparentCircleRadius = 35f
+            // 调整饼图大小参数 - 减小中心空白区域，增大整体饼图半径
+            holeRadius = 30f       // 减小中心孔半径(原始值为30f)
+            transparentCircleRadius = 35f  // 减小透明圆圈半径(原始值为35f)
+
+            // 增加饼图的整体尺寸
+            setExtraOffsets(10f, 10f, 10f, 10f)  // 设置饼图边距，留出标签空间
+
+            // 启用交互
             setTouchEnabled(true)
-            setExtraOffsets(5f, 5f, 5f, 5f)
+            isRotationEnabled = true     // 允许旋转
+            animateY(1200)
         }
 
         // 配置柱状图 - 设置主题相关颜色
@@ -169,6 +180,9 @@ class AnalysisFragment : Fragment() {
             setTouchEnabled(true)
             setScaleEnabled(true)
             setPinchZoom(true)
+            setDrawGridBackground(false)
+            setDrawBorders(false)
+            animateY(1200)
 
             // 确保所有文本颜色正确应用
             xAxis.apply {
@@ -176,11 +190,14 @@ class AnalysisFragment : Fragment() {
                 granularity = 1f
                 textColor = secondaryTextColor  // 设置X轴文字颜色
                 textSize = 11f
+                setDrawGridLines(false)
             }
 
             axisLeft.apply {
                 textColor = secondaryTextColor  // 设置Y轴文字颜色
                 textSize = 11f
+                setDrawGridLines(true)
+                gridColor = Color.parseColor("#20000000") // 半透明网格线
             }
 
             axisRight.isEnabled = false
@@ -193,21 +210,17 @@ class AnalysisFragment : Fragment() {
         // 观察间隔天数数据
         viewModel.dayDiffData.observe(viewLifecycleOwner) { dayDiffs ->
             if (dayDiffs.isEmpty()) {
-                // 没有数据时，隐藏所有图表，显示"暂无数据"
-                binding.textNoData.visibility = View.VISIBLE
-                binding.lineChart.visibility = View.GONE
-                binding.pieChart.visibility = View.GONE
-                binding.barChart.visibility = View.GONE
-                binding.textLineChartTitle?.visibility = View.GONE
-                binding.textPieChartTitle?.visibility = View.GONE
+                // 没有数据时，显示"暂无数据"布局，隐藏图表卡片
+                binding.layoutNoData.visibility = View.VISIBLE
+                binding.cardLineChart.visibility = View.GONE
+                binding.cardBarChart.visibility = View.GONE
+                binding.cardPieChart.visibility = View.GONE
             } else {
-                // 有数据时，显示所有图表和标题，隐藏"暂无数据"提示
-                binding.textNoData.visibility = View.GONE
-                binding.lineChart.visibility = View.VISIBLE
-                binding.pieChart.visibility = View.VISIBLE
-                binding.barChart.visibility = View.VISIBLE
-                binding.textLineChartTitle?.visibility = View.VISIBLE
-                binding.textPieChartTitle?.visibility = View.VISIBLE
+                // 有数据时，隐藏"暂无数据"布局，显示图表卡片
+                binding.layoutNoData.visibility = View.GONE
+                binding.cardLineChart.visibility = View.VISIBLE
+                binding.cardBarChart.visibility = View.VISIBLE
+                binding.cardPieChart.visibility = View.VISIBLE
 
                 // 更新折线图
                 updateLineChart(dayDiffs)
@@ -218,20 +231,18 @@ class AnalysisFragment : Fragment() {
         viewModel.cycleFrequencyData.observe(viewLifecycleOwner) { frequencyMap ->
             if (frequencyMap.isEmpty()) {
                 // 如果频率数据为空，也要确保饼图和柱状图不显示
-                binding.pieChart.visibility = View.GONE
-                binding.barChart.visibility = View.GONE
-                binding.textPieChartTitle?.visibility = View.GONE
+                binding.cardBarChart.visibility = View.GONE
+                binding.cardPieChart.visibility = View.GONE
 
                 // 检查是否所有图表都需要隐藏
                 if (viewModel.dayDiffData.value?.isEmpty() != false) {
-                    binding.textNoData.visibility = View.VISIBLE
+                    binding.layoutNoData.visibility = View.VISIBLE
                 }
             } else {
                 // 确保饼图和柱状图可见
-                binding.textNoData.visibility = View.GONE
-                binding.pieChart.visibility = View.VISIBLE
-                binding.barChart.visibility = View.VISIBLE
-                binding.textPieChartTitle?.visibility = View.VISIBLE
+                binding.layoutNoData.visibility = View.GONE
+                binding.cardBarChart.visibility = View.VISIBLE
+                binding.cardPieChart.visibility = View.VISIBLE
 
                 // 更新饼图和柱状图
                 updatePieChart(frequencyMap)
@@ -254,8 +265,8 @@ class AnalysisFragment : Fragment() {
         val dataSet = LineDataSet(entries, "间隔天数").apply {
             color = mainColor
             setCircleColor(mainColor)
-            lineWidth = 2f
-            circleRadius = 4f
+            lineWidth = 2.5f
+            circleRadius = 5f
             setDrawCircleHole(false)
             valueTextSize = 11f
             valueTextColor = themeTextColor
@@ -270,6 +281,10 @@ class AnalysisFragment : Fragment() {
             // 确保显示数据点和数值
             setDrawCircles(true)
             setDrawValues(true)
+
+            // 高亮效果
+            highLightColor = Color.parseColor("#50000000")
+            setDrawHorizontalHighlightIndicator(false)
         }
 
         val lineData = LineData(dataSet)
@@ -282,8 +297,8 @@ class AnalysisFragment : Fragment() {
         val average = dayDiffs.average().toFloat()
 
         // 创建平均值线 - 确保颜色正确应用
-        val limitLine = LimitLine(average, String.format("%.1f 天", average)).apply {
-            lineWidth = 2f
+        val limitLine = LimitLine(average, String.format("%.1f", average)).apply {
+            lineWidth = 1.5f
             lineColor = secondaryTextColor  // 使用次要文本颜色
             textColor = secondaryTextColor
             enableDashedLine(10f, 10f, 0f)
@@ -297,7 +312,7 @@ class AnalysisFragment : Fragment() {
 
         // 设置X轴标签
         binding.lineChart.xAxis.valueFormatter = IndexAxisValueFormatter(
-            dayDiffs.mapIndexed { index, _ -> "${index+1}" }
+            dayDiffs.mapIndexed { index, _ -> "${index + 1}" }
         )
 
         // 设置图表可见数据点范围
@@ -318,7 +333,12 @@ class AnalysisFragment : Fragment() {
             return
         }
 
+        // 创建一个映射来存储天数和它们的标签
+        val daysLabelMap = mutableMapOf<Float, String>()
+
         val entries = frequencyMap.map { (days, count) ->
+            // 存储天数值和对应的标签
+            daysLabelMap[count.toFloat()] = "$days 天"
             PieEntry(count.toFloat(), "$days 天")
         }
 
@@ -330,24 +350,44 @@ class AnalysisFragment : Fragment() {
             colors = randomColors
             valueTextSize = 14f
             valueTextColor = if (themeTextColor != 0) themeTextColor else Color.BLACK
-            sliceSpace = 2f  // 减小间隙
-            yValuePosition = PieDataSet.ValuePosition.INSIDE_SLICE
+            sliceSpace = 1.5f  // 减小间隙，使饼图看起来更大
+
+            // 标签配置
+            yValuePosition = PieDataSet.ValuePosition.INSIDE_SLICE  // 将值显示在饼图外部
+            valueLinePart1OffsetPercentage = 0.95f  // 连接线起点偏移量
+            valueLinePart1Length = 0.4f  // 连接线第一段长度
+            valueLinePart2Length = 0.6f  // 连接线第二段长度
+            valueLineWidth = 1.5f        // 调整连接线宽度
+            valueLineColor = themeTextColor  // 设置连接线颜色
+            xValuePosition = PieDataSet.ValuePosition.OUTSIDE_SLICE  // 标签也显示在外部
+            selectionShift = 8f // 增大选中时突出显示的距离
         }
 
-        // 自定义值格式化器，同时显示数值和百分比
-        val pieValueFormatter = object : PercentFormatter(binding.pieChart) {
+        // 自定义的值格式化器，根据原始值找到对应的标签
+        val customFormatter = object : PercentFormatter(binding.pieChart) {
             override fun getFormattedValue(value: Float): String {
-                // 获取原始数值（频次）和百分比
-                val entry = entries.find { it.value == value } ?: return super.getFormattedValue(value)
+                // 计算原始值（基于总和和百分比）
+                val total = entries.sumOf { it.value.toDouble() }.toFloat()
+                val originalValue = value * total / 100f
+
+                // 查找最接近的原始值对应的标签
+                val closestEntry = entries.minByOrNull {
+                    Math.abs(it.value - originalValue)
+                }
+
+                // 获取标签
+                val label = closestEntry?.label ?: ""
+
+                // 格式化百分比
                 val percent = super.getFormattedValue(value)
 
-                // 返回格式：数值(百分比)
-                return "${value.toInt()} (${percent})"
+                // 返回"标签 (百分比)"格式
+                return "$label ($percent)"
             }
         }
 
         val pieData = PieData(dataSet).apply {
-            setValueFormatter(pieValueFormatter)
+            setValueFormatter(customFormatter)
             setValueTextSize(12f)
             setValueTextColor(if (themeTextColor != 0) themeTextColor else Color.BLACK)
         }
@@ -357,27 +397,25 @@ class AnalysisFragment : Fragment() {
         binding.pieChart.data = pieData
 
         // 饼图配置
-        binding.pieChart.setDrawEntryLabels(true)  // 启用标签显示
+        binding.pieChart.setDrawEntryLabels(false)  // 禁用内部标签，使用外部标签
         binding.pieChart.setEntryLabelColor(if (themeTextColor != 0) themeTextColor else Color.BLACK)
         binding.pieChart.setEntryLabelTextSize(11f)
-        binding.pieChart.isRotationEnabled = true  // 允许旋转
+        binding.pieChart.isRotationEnabled = true   // 允许旋转
         binding.pieChart.setUsePercentValues(true)  // 使用百分比值
         binding.pieChart.description.isEnabled = false
-        binding.pieChart.legend.isEnabled = false  // 关闭图例说明
-        binding.pieChart.legend.textColor = if (themeTextColor != 0) themeTextColor else Color.BLACK
+        binding.pieChart.legend.isEnabled = false   // 关闭图例说明
 
         // 调整中心空白区域大小
-        binding.pieChart.holeRadius = 40f  // 稍微增大中心孔半径，为标签腾出空间
-        binding.pieChart.transparentCircleRadius = 45f
+        binding.pieChart.holeRadius = 20f          // 减小中心孔以增大饼图面积
+        binding.pieChart.transparentCircleRadius = 40f  // 减小透明圈半径
         binding.pieChart.setHoleColor(Color.TRANSPARENT)
-        binding.pieChart.setCenterTextColor(if (themeTextColor != 0) themeTextColor else Color.BLACK)
 
-        // 设置合适的边距，不要太大
-        binding.pieChart.setExtraOffsets(10f, 10f, 10f, 10f)
+        // 设置最小角度来确保小饼块也能显示
+        binding.pieChart.setMinAngleForSlices(15f)
 
         // 强制刷新并添加动画
         binding.pieChart.invalidate()
-        binding.pieChart.animateY(800)
+        binding.pieChart.animateY(1200)
     }
 
     private fun updateBarChart(frequencyMap: Map<Int, Int>) {
@@ -398,23 +436,29 @@ class AnalysisFragment : Fragment() {
             valueTextSize = 12f
             valueTextColor = themeTextColor  // 使用主题文本颜色
             setValueFormatter(DefaultValueFormatter(0))
+
+            // 高亮效果
+            highLightColor = Color.parseColor("#50000000")
         }
 
         val barData = BarData(dataSet)
         barData.setValueTextColor(themeTextColor)
         barData.setValueTextSize(12f)
+        barData.barWidth = 0.7f // 调整柱子宽度
 
         // 确保坐标轴颜色正确
         binding.barChart.xAxis.textColor = secondaryTextColor
         binding.barChart.axisLeft.textColor = secondaryTextColor
 
         // 保留X轴标签为天数
-        binding.barChart.xAxis.valueFormatter = IndexAxisValueFormatter(sortedMap.keys.map { "$it 天" })
+        binding.barChart.xAxis.valueFormatter =
+            IndexAxisValueFormatter(sortedMap.keys.map { "$it" })
+        binding.barChart.xAxis.labelRotationAngle = 0f // 确保标签水平显示
 
         binding.barChart.data = barData
         binding.barChart.invalidate()
         // 添加从下到上的动画效果
-        binding.barChart.animateY(800)
+        binding.barChart.animateY(1200)
     }
 
     // 当配置变化（如主题切换）时重新设置图表颜色
@@ -425,7 +469,10 @@ class AnalysisFragment : Fragment() {
         val themeTextColor = getTextColor(requireContext())
         val secondaryTextColor = getSecondaryTextColor(requireContext())
 
-        Log.d("AnalysisFragment", "配置变化: textColor = $themeTextColor, secondaryTextColor = $secondaryTextColor")
+        Log.d(
+            "AnalysisFragment",
+            "配置变化: textColor = $themeTextColor, secondaryTextColor = $secondaryTextColor"
+        )
 
         // 重新设置所有图表的颜色
         setupCharts()
