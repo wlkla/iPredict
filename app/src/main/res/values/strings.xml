@@ -40,4 +40,10 @@
         <item name="android:textColorPrimary">?android:attr/textColorPrimary</item>
         <item name="android:textColorSecondary">?android:attr/textColorSecondary</item>
     </style>
+
+    <!--预警相关-->
+    <string name="channel_name">周期提醒</string>
+    <string name="channel_description">预期日期到达时的提醒</string>
+    <string name="notification_title">今天是预期日期</string>
+    <string name="notification_message">您的预期日期已到达，别忘了更新记录哦！</string>
 </resources>

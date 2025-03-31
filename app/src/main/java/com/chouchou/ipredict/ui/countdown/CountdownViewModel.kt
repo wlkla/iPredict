@@ -1,13 +1,27 @@
 package com.chouchou.ipredict.ui.countdown
 
+import android.Manifest
 import android.app.Application
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import androidx.lifecycle.map
+import androidx.lifecycle.switchMap
 import androidx.lifecycle.viewModelScope
 import com.chouchou.ipredict.IPredictApplication
+import com.chouchou.ipredict.MainActivity
+import com.chouchou.ipredict.R
+import com.chouchou.ipredict.data.EventType
 import com.chouchou.ipredict.data.repository.EventDateRepository
+import com.chouchou.ipredict.data.repository.EventTypeRepository
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -17,7 +31,8 @@ import java.util.concurrent.TimeUnit
 
 class CountdownViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repository: EventDateRepository = (application as IPredictApplication).repository
+    private val eventDateRepository: EventDateRepository = (application as IPredictApplication).eventDateRepository
+    private val eventTypeRepository: EventTypeRepository = (application as IPredictApplication).eventTypeRepository
 
     private val _nextEventDate = MutableLiveData<String>()
     val nextEventDate: LiveData<String> = _nextEventDate
@@ -36,12 +51,32 @@ class CountdownViewModel(application: Application) : AndroidViewModel(applicatio
     private val _cycleProgress = MutableLiveData<Float>()
     val cycleProgress: LiveData<Float> = _cycleProgress
 
+    // 当前活动的事件类型
+    val activeEventType: LiveData<EventType?> = eventTypeRepository.activeEventType
+
     // 平均周期天数（默认为28天）
     private var averageCycleDays = 28
 
+    private val activeEventTypeObserver = Observer<EventType?> { eventType ->
+        eventType?.let {
+            // 当活动事件类型变化时，更新数据
+            loadEventDatesByType(it.id)
+        }
+    }
+
     init {
-        // 监听最新事件日期的变化，更新倒计时
-        repository.allEventDates.map { dates ->
+        // 观察活动事件类型的变化
+        activeEventType.observeForever(activeEventTypeObserver)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        activeEventType.removeObserver(activeEventTypeObserver)
+    }
+
+    // 加载指定事件类型的日期数据
+    private fun loadEventDatesByType(eventTypeId: Int) {
+        eventDateRepository.getEventDatesByType(eventTypeId).observeForever { dates ->
             if (dates.size >= 2) {
                 // 计算平均周期天数
                 var totalDays = 0
@@ -54,17 +89,18 @@ class CountdownViewModel(application: Application) : AndroidViewModel(applicatio
             }
 
             // 获取最新日期
-            dates.firstOrNull()?.date
-        }.observeForever { latestDate ->
-            latestDate?.let { updateCountdown(it) }
+            dates.firstOrNull()?.let { updateCountdown(it.date) }
         }
     }
 
     // 记录事件方法
     fun recordEvent() {
+        // 获取当前活动的事件类型ID
+        val eventTypeId = activeEventType.value?.id ?: 1
+
         // 添加今天的事件记录
         viewModelScope.launch {
-            repository.insertEventDate(Date())
+            eventDateRepository.insertEventDate(Date(), eventTypeId)
         }
     }
 
@@ -88,7 +124,7 @@ class CountdownViewModel(application: Application) : AndroidViewModel(applicatio
         val diffInMillis = nextDate.time - today.time
         val diffInDays = TimeUnit.MILLISECONDS.toDays(diffInMillis).toInt()
 
-        if (diffInDays >= 0) {
+        if (diffInDays > 0) {
             // 还有天数到预期日期
             _countdown.value = diffInDays
             _countdownLabel.value = "倒计时"
@@ -99,13 +135,75 @@ class CountdownViewModel(application: Application) : AndroidViewModel(applicatio
             val progress = daysPassed.toFloat() / averageCycleDays.toFloat()
             // 将进度值直接发送到LiveData，不需要转换为百分比
             _cycleProgress.value = progress
+        } else if (diffInDays == 0) {
+            // 今天是预期日期
+            _countdown.value = 0
+            _countdownLabel.value = "今日到期"
+            _cycleProgress.value = 1.0f
+
+            // 检查是否已经发送过通知
+            checkAndSendNotification()
         } else {
             // 已经超过预期日期
             _countdown.value = -diffInDays
             _countdownLabel.value = "已过期"
-
-            // 设置进度为100%（1.0f）
             _cycleProgress.value = 1.0f
+        }
+    }
+
+    // 检查并发送通知
+    private fun checkAndSendNotification() {
+        // 获取当天日期的格式化字符串，用于检查是否已经发送过通知
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val todayString = dateFormat.format(Date())
+
+        // 获取SharedPreferences来存储上次通知的日期
+        val prefs = getApplication<Application>().getSharedPreferences(
+            "notification_prefs", Context.MODE_PRIVATE)
+        val lastNotificationDate = prefs.getString("last_notification_date", "")
+
+        // 如果今天没有发送过通知，则发送通知
+        if (lastNotificationDate != todayString) {
+            sendNotification()
+
+            // 保存今天的日期，避免重复发送通知
+            prefs.edit().putString("last_notification_date", todayString).apply()
+        }
+    }
+
+    // 发送通知
+    private fun sendNotification() {
+        val context = getApplication<Application>()
+        val eventType = activeEventType.value
+
+        // 创建一个Intent，点击通知时打开应用
+        val intent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        val pendingIntent = PendingIntent.getActivity(
+            context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+
+        // 构建通知
+        val builder = NotificationCompat.Builder(context, IPredictApplication.CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_calendar)
+            .setContentTitle(context.getString(R.string.notification_title))
+            .setContentText(eventType?.let { "${it.name}的预期日期已到达" }
+                ?: context.getString(R.string.notification_message))
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+
+        // 显示通知
+        val notificationManager = NotificationManagerCompat.from(context)
+
+        // 检查通知权限（Android 13及以上需要）
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
+                == PackageManager.PERMISSION_GRANTED) {
+                notificationManager.notify(1, builder.build())
+            }
+        } else {
+            notificationManager.notify(1, builder.build())
         }
     }
 }

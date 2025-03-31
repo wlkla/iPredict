@@ -318,11 +318,11 @@ class AnalysisFragment : Fragment() {
         // 设置图表可见数据点范围
         binding.lineChart.setVisibleXRangeMaximum(entries.size.toFloat())
 
-        // 先重置图表
+        // 刷新图表 - 不使用动画直接显示所有点
         binding.lineChart.invalidate()
 
-        // 使用X轴动画，实现从左到右绘制效果
-        binding.lineChart.animateX(1500)
+        // 删除或注释以下行，移除动画效果
+        // binding.lineChart.animateX(1500)
     }
 
     private fun updatePieChart(frequencyMap: Map<Int, Int>) {

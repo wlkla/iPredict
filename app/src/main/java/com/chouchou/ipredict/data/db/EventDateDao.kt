@@ -27,4 +27,16 @@ interface EventDateDao {
     // 添加同步查询方法
     @Query("SELECT * FROM event_dates ORDER BY date DESC")
     suspend fun getAllEventDatesSync(): List<EventDateEntity>
+
+    @Query("SELECT * FROM event_dates WHERE eventTypeId = :eventTypeId ORDER BY date DESC")
+    fun getEventDatesByType(eventTypeId: Int): LiveData<List<EventDateEntity>>
+
+    @Query("SELECT * FROM event_dates WHERE eventTypeId = :eventTypeId ORDER BY date DESC LIMIT 1")
+    fun getLatestEventDateByType(eventTypeId: Int): LiveData<EventDateEntity?>
+
+    @Query("DELETE FROM event_dates WHERE eventTypeId = :eventTypeId")
+    suspend fun deleteEventDatesByType(eventTypeId: Int)
+
+    @Query("SELECT * FROM event_dates WHERE eventTypeId = :eventTypeId ORDER BY date DESC")
+    suspend fun getEventDatesByTypeSync(eventTypeId: Int): List<EventDateEntity>
 }

@@ -8,5 +8,6 @@ data class EventTypeEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
     val name: String,
-    val isActive: Boolean = false
+    val isActive: Boolean = false,
+    val color: String = "#000000" // 默认颜色
 )

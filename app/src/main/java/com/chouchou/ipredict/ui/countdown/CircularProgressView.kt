@@ -91,6 +91,14 @@ class CircularProgressView @JvmOverloads constructor(
     }
 
     /**
+     * 设置进度条颜色
+     */
+    fun setProgressColor(color: Int) {
+        progressPaint.color = color
+        invalidate()
+    }
+
+    /**
      * 获取当前进度值
      */
     fun getProgress(): Float = progressValue

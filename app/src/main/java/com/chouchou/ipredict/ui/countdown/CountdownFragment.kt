@@ -1,8 +1,15 @@
 package com.chouchou.ipredict.ui.countdown
 
+import android.Manifest
+import android.graphics.Color
 import android.app.AlertDialog
 import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.text.InputType
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -13,6 +20,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.chouchou.ipredict.R
 import com.chouchou.ipredict.databinding.FragmentCountdownBinding
+import com.google.android.material.snackbar.Snackbar
 
 class CountdownFragment : Fragment() {
 
@@ -39,6 +47,11 @@ class CountdownFragment : Fragment() {
             binding.textNextEvent.text = "下一个预期事件日期：$it"
         }
 
+        // 观察倒计时标签变化
+        viewModel.countdownLabel.observe(viewLifecycleOwner) { label ->
+            binding.textCountdownLabel.text = label
+        }
+
         // 观察倒计时天数变化
         viewModel.countdown.observe(viewLifecycleOwner) { countdown ->
             binding.textCountdown.text = countdown.toString()
@@ -48,6 +61,23 @@ class CountdownFragment : Fragment() {
         viewModel.cycleProgress.observe(viewLifecycleOwner) { progress ->
             // 直接使用ViewModel计算好的进度值
             binding.progressCycle.setProgress(progress)
+        }
+
+        // 观察当前活动事件类型
+        viewModel.activeEventType.observe(viewLifecycleOwner) { eventType ->
+            eventType?.let {
+                // 更新标题以显示当前事件类型名称
+                binding.textTitle.text = it.name
+
+                // 可选：使用事件类型的颜色设置一些UI元素
+                try {
+                    val color = Color.parseColor(it.color)
+                    binding.progressCycle.setProgressColor(color)
+                    // 这里需要在 CircularProgressView 中添加 setProgressColor 方法
+                } catch (e: Exception) {
+                    // 颜色解析错误处理
+                }
+            }
         }
 
         // 更新按钮点击事件
@@ -60,6 +90,7 @@ class CountdownFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        requestNotificationPermission()
 
         // 设置编辑按钮点击事件
         binding.buttonEditTip.setOnClickListener {
@@ -68,6 +99,49 @@ class CountdownFragment : Fragment() {
 
         // 加载保存的自定义提示
         loadCustomTip()
+    }
+
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (requireActivity().checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+                // 如果没有权限，请求权限
+                requestPermissions(
+                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                    NOTIFICATION_PERMISSION_REQUEST_CODE
+                )
+            }
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        if (requestCode == NOTIFICATION_PERMISSION_REQUEST_CODE) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // 权限已授予，可以发送通知
+            } else {
+                // 解释为什么需要这个权限，并再次提示用户
+                Snackbar.make(
+                    binding.root,
+                    "通知权限被拒绝，将无法接收到预期日期提醒",
+                    Snackbar.LENGTH_LONG
+                ).setAction("设置") {
+                    // 跳转到应用设置页
+                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                    intent.data = Uri.fromParts("package", requireActivity().packageName, null)
+                    startActivity(intent)
+                }.show()
+            }
+        } else {
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        }
+    }
+
+    companion object {
+        private const val NOTIFICATION_PERMISSION_REQUEST_CODE = 100
     }
 
     private fun initProgress() {

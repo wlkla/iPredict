@@ -3,11 +3,13 @@ package com.chouchou.ipredict.ui.dates
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.PopupMenu
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -39,6 +41,22 @@ class DatesFragment : Fragment() {
                 importDataFromUri(uri)
             }
         }
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        updateButtonIconColors()
+    }
+
+    private fun updateButtonIconColors() {
+        val context = requireContext()
+        val colorStateList = ColorStateList.valueOf(
+            context.getColorStateList(R.color.button_icon_color)?.defaultColor
+                ?: context.getColor(android.R.color.darker_gray)
+        )
+
+        binding.buttonImport.iconTint = colorStateList
+        binding.buttonExport.iconTint = colorStateList
     }
 
     override fun onCreateView(
@@ -100,36 +118,83 @@ class DatesFragment : Fragment() {
 
     private fun setupExportButton() {
         binding.buttonExport.setOnClickListener {
-            // 显示进度提示
-            val progressSnackbar = Snackbar.make(binding.root, "正在准备导出...", Snackbar.LENGTH_INDEFINITE)
-            progressSnackbar.show()
+            // 显示选择菜单：导出当前事件类型或所有数据
+            val popup = PopupMenu(requireContext(), binding.buttonExport)
+            popup.menuInflater.inflate(R.menu.export_options, popup.menu)
 
-            lifecycleScope.launch {
-                try {
-                    val result = viewModel.exportDataToCsv()
-                    // 隐藏进度提示
-                    progressSnackbar.dismiss()
-
-                    if (result.success && result.fileUri != null) {
-                        // 导出成功，分享文件
-                        shareExportedFile(result.fileUri)
-                    } else {
-                        // 导出失败，显示错误信息
-                        Snackbar.make(
-                            binding.root,
-                            result.errorMessage ?: "导出失败，请稍后重试",
-                            Snackbar.LENGTH_LONG
-                        ).show()
+            popup.setOnMenuItemClickListener { menuItem ->
+                when (menuItem.itemId) {
+                    R.id.action_export_current -> {
+                        exportCurrentEventTypeData()
+                        true
                     }
-                } catch (e: Exception) {
-                    // 处理异常
-                    progressSnackbar.dismiss()
+                    R.id.action_export_all -> {
+                        exportAllEventTypesData()
+                        true
+                    }
+                    else -> false
+                }
+            }
+            popup.show()
+        }
+    }
+
+    private fun exportCurrentEventTypeData() {
+        // 显示进度提示
+        val progressSnackbar = Snackbar.make(binding.root, "正在准备导出...", Snackbar.LENGTH_INDEFINITE)
+        progressSnackbar.show()
+
+        lifecycleScope.launch {
+            try {
+                val result = viewModel.exportDataToCsv()
+                progressSnackbar.dismiss()
+
+                if (result.success && result.fileUri != null) {
+                    shareExportedFile(result.fileUri)
+                } else {
                     Snackbar.make(
                         binding.root,
-                        "导出出错: ${e.message}",
+                        result.errorMessage ?: "导出失败，请稍后重试",
                         Snackbar.LENGTH_LONG
                     ).show()
                 }
+            } catch (e: Exception) {
+                progressSnackbar.dismiss()
+                Snackbar.make(
+                    binding.root,
+                    "导出出错: ${e.message}",
+                    Snackbar.LENGTH_LONG
+                ).show()
+            }
+        }
+    }
+
+    private fun exportAllEventTypesData() {
+        // 显示进度提示
+        val progressSnackbar = Snackbar.make(binding.root, "正在准备导出所有数据...", Snackbar.LENGTH_INDEFINITE)
+        progressSnackbar.show()
+
+        lifecycleScope.launch {
+            try {
+                val result = viewModel.exportAllEventTypesData()
+                progressSnackbar.dismiss()
+
+                if (result.success && result.fileUri != null) {
+                    shareExportedFile(result.fileUri)
+                } else {
+                    Snackbar.make(
+                        binding.root,
+                        result.errorMessage ?: "导出失败，请稍后重试",
+                        Snackbar.LENGTH_LONG
+                    ).show()
+                }
+            } catch (e: Exception) {
+                progressSnackbar.dismiss()
+                Snackbar.make(
+                    binding.root,
+                    "导出出错: ${e.message}",
+                    Snackbar.LENGTH_LONG
+                ).show()
             }
         }
     }
@@ -151,7 +216,68 @@ class DatesFragment : Fragment() {
 
     private fun setupImportButton() {
         binding.buttonImport.setOnClickListener {
-            launchFilePicker()
+            // 显示选择菜单：导入到当前事件类型或导入所有数据
+            val popup = PopupMenu(requireContext(), binding.buttonImport)
+            popup.menuInflater.inflate(R.menu.import_options, popup.menu)
+
+            popup.setOnMenuItemClickListener { menuItem ->
+                when (menuItem.itemId) {
+                    R.id.action_import_current -> {
+                        launchFilePicker(false)
+                        true
+                    }
+                    R.id.action_import_all -> {
+                        launchFilePicker(true)
+                        true
+                    }
+                    else -> false
+                }
+            }
+            popup.show()
+        }
+    }
+
+    private fun launchFilePicker(importAll: Boolean) {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "*/*"
+            putExtra(Intent.EXTRA_MIME_TYPES, arrayOf(
+                "text/csv",
+                "text/comma-separated-values",
+                "application/csv",
+                "text/plain"
+            ))
+        }
+
+        if (importAll) {
+            importAllFileLauncher.launch(intent)
+        } else {
+            importFileLauncher.launch(intent)
+        }
+    }
+
+    // 添加新的文件选择器结果处理
+    private val importAllFileLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            result.data?.data?.let { uri ->
+                importAllDataFromUri(uri)
+            }
+        }
+    }
+
+    private fun importAllDataFromUri(uri: Uri) {
+        lifecycleScope.launch {
+            val result = viewModel.importAllEventTypesData(uri)
+            val message = when {
+                result.errorMessage != null -> "导入失败: ${result.errorMessage}"
+                result.successCount == 0 && result.errorCount == 0 -> "没有找到日期数据"
+                result.errorCount == 0 -> result.errorMessage ?: "成功导入 ${result.successCount} 条记录"
+                else -> "导入了 ${result.successCount} 条记录，${result.errorCount} 条无效"
+            }
+
+            Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
         }
     }
 

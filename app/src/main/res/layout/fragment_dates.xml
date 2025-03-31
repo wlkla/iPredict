@@ -48,7 +48,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/text_title" />
 
-        <!-- 导入按钮 -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button_import"
             android:layout_width="wrap_content"
@@ -63,7 +62,6 @@
             app:layout_constraintTop_toTopOf="@id/text_title"
             app:layout_constraintBottom_toBottomOf="@id/text_subtitle" />
 
-        <!-- 导出按钮 -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button_export"
             android:layout_width="wrap_content"

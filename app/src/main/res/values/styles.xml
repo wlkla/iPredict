@@ -25,4 +25,16 @@
         <item name="android:textColor">@color/white</item>
         <item name="rippleColor">@color/black</item>
     </style>
+
+    <string name="event_types">事件列表</string>
+    <string name="add_event_type">添加</string>
+    <string name="edit_event_type">编辑</string>
+    <string name="delete_event_type">删除</string>
+    <string name="event_type_name">事件名称</string>
+    <string name="choose_color">选择颜色</string>
+    <string name="active">当前活动</string>
+
+    <style name="NavigationViewStyle">
+        <item name="android:listDivider">@android:color/transparent</item>
+    </style>
 </resources>

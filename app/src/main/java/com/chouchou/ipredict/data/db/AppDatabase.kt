@@ -6,11 +6,12 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 
-@Database(entities = [EventDateEntity::class], version = 1, exportSchema = false)
+@Database(entities = [EventDateEntity::class, EventTypeEntity::class], version = 2, exportSchema = false)
 @TypeConverters(DateConverter::class)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun eventDateDao(): EventDateDao
+    abstract fun eventTypeDao(): EventTypeDao // 添加新的DAO
 
     companion object {
         @Volatile
@@ -23,7 +24,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "ipredict_database"
                 )
-                    .fallbackToDestructiveMigration()
+                    .fallbackToDestructiveMigration() // 版本变更时重建数据库
                     .build()
                 INSTANCE = instance
                 instance

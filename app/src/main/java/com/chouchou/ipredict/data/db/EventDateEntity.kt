@@ -11,5 +11,6 @@ data class EventDateEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
     val date: Date,
-    val note: String = "" // 可选的备注字段
+    val note: String = "", // 可选的备注字段
+    val eventTypeId: Int = 1 // 默认为1，关联到事件类型
 )
