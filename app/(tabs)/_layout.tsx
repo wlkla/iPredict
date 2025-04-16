@@ -1,21 +1,32 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Platform } from 'react-native';
+import { Platform, TouchableOpacity, View, StyleSheet } from 'react-native';
+import { useNavigation } from 'expo-router';
 
 import { HapticTab } from '@/components/HapticTab';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { ThemedText } from '@/components/ThemedText';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const navigation = useNavigation();
+
+  const openSettings = () => {
+    navigation.navigate('settings' as never);
+  };
+
+  const openAbout = () => {
+    navigation.navigate('about' as never);
+  };
 
   return (
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
+        headerShown: true,
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
         tabBarStyle: Platform.select({
@@ -25,21 +36,53 @@ export default function TabLayout() {
           },
           default: {},
         }),
+        headerTitle: 'iPredict',
+        headerTitleStyle: {
+          fontWeight: 'bold',
+        },
+        headerLeft: () => (
+          <TouchableOpacity style={styles.menuButton} onPress={openSettings}>
+            <IconSymbol name="settings" size={24} color={Colors[colorScheme ?? 'light'].icon} />
+          </TouchableOpacity>
+        ),
+        headerRight: () => (
+          <TouchableOpacity style={styles.infoButton} onPress={openAbout}>
+            <IconSymbol name="info" size={24} color={Colors[colorScheme ?? 'light'].icon} />
+          </TouchableOpacity>
+        ),
       }}>
       <Tabs.Screen
-        name="index"
+        name="countdown"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          title: '倒计时',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="timer" color={color} />,
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="date"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: '日期',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="calendar" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="analytics"
+        options={{
+          title: '分析',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="analytics" color={color} />,
         }}
       />
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  menuButton: {
+    padding: 8,
+    marginLeft: 8,
+  },
+  infoButton: {
+    padding: 8,
+    marginRight: 8,
+  },
+});
