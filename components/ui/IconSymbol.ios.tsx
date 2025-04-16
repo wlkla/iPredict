@@ -27,6 +27,8 @@ const SF_SYMBOLS_MAPPING = {
   'trending_up': 'chart.line.uptrend.xyaxis',
   'flag': 'flag.fill',
   'chevron_right': 'chevron.right',
+  // 新增图标映射
+  'add': 'plus.circle.fill',
 };
 
 export function IconSymbol({

@@ -13,7 +13,7 @@ const MAPPING = {
   'paperplane.fill': 'send',
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
-  // 新增图标映射
+  // 已有图标映射
   'timer': 'timer',
   'calendar': 'event',
   'analytics': 'analytics',
@@ -37,6 +37,8 @@ const MAPPING = {
   'trending_up': 'trending_up',
   'flag': 'flag',
   'chevron_right': 'chevron_right',
+  // 新增图标映射
+  'add': 'add',
 } as Partial<
   Record<
     import('expo-symbols').SymbolViewProps['name'],
