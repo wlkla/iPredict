@@ -11,6 +11,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { SvgXml } from 'react-native-svg';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -18,6 +19,9 @@ import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+
+// 本地存储键名
+const STORAGE_KEY = 'ipredict_date_records';
 
 // 定义日期记录的接口
 interface DateRecord {
@@ -66,24 +70,38 @@ export default function DateScreen() {
     <path d="M320 350 L350 380 L380 350" stroke="#0a7ea4" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
   </svg>`;
   
-  // 加载模拟数据
+  // 从 AsyncStorage 加载数据
   useEffect(() => {
-    // 模拟从数据库加载数据
-    const loadData = () => {
-      const today = new Date();
-      const mockData: DateRecord[] = [
-        {
-          id: '1',
-          date: today,
-          daysSinceLastRecord: null // 首次记录
-        }
-      ];
-      
-      setDateRecords(mockData);
-    };
-    
-    loadData();
+    loadRecordsFromStorage();
   }, []);
+  
+  // 加载本地存储数据
+  const loadRecordsFromStorage = async () => {
+    try {
+      const storedRecords = await AsyncStorage.getItem(STORAGE_KEY);
+      
+      if (storedRecords) {
+        // 解析存储的 JSON 字符串，并转换日期字符串为 Date 对象
+        const parsedRecords: DateRecord[] = JSON.parse(storedRecords).map((record: any) => ({
+          ...record,
+          date: new Date(record.date)
+        }));
+        
+        setDateRecords(parsedRecords);
+      }
+    } catch (error) {
+      console.error('Error loading records from storage:', error);
+    }
+  };
+  
+  // 保存记录到本地存储
+  const saveRecordsToStorage = async (records: DateRecord[]) => {
+    try {
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+    } catch (error) {
+      console.error('Error saving records to storage:', error);
+    }
+  };
   
   // 更新所有记录的天数差
   const updateRecordIntervals = (records: DateRecord[]) => {
@@ -181,6 +199,9 @@ export default function DateScreen() {
     // 更新状态，将新记录添加到数组
     const updatedRecords = updateRecordIntervals([newRecord, ...dateRecords]);
     setDateRecords(updatedRecords);
+    
+    // 保存到本地存储
+    saveRecordsToStorage(updatedRecords);
   };
   
   // 处理删除记录
@@ -202,6 +223,9 @@ export default function DateScreen() {
             // 更新所有记录的天数差
             const processedRecords = updateRecordIntervals(updatedRecords);
             setDateRecords(processedRecords);
+            
+            // 保存到本地存储
+            saveRecordsToStorage(processedRecords);
           }
         }
       ]
@@ -332,8 +356,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerImage: {
-    bottom: -30, // 调整图标位置向上移动
-    right: -20, // 调整图标位置向左移动
+    bottom: -30,
+    right: -20,
     position: 'absolute',
     opacity: 0.7,
   },
