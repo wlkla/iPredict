@@ -1,4 +1,4 @@
-import { StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet, TouchableOpacity, Alert, Platform, View } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { Swipeable } from 'react-native-gesture-handler';
 import Animated, {
@@ -9,12 +9,13 @@ import Animated, {
   FadeIn,
   FadeOut,
 } from 'react-native-reanimated';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { SvgXml } from 'react-native-svg';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
-// 注意：需要确保 IconSymbol 组件映射表中包含 'add' 图标
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 
@@ -37,6 +38,34 @@ export default function DateScreen() {
   const [datePickerVisible, setDatePickerVisible] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
   
+  // SVG图标
+  const noDataSvg = `<svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+    <!-- 日历背景 -->
+    <rect x="100" y="100" width="300" height="300" rx="20" ry="20" fill="#f0f0f0" stroke="#cccccc" stroke-width="4"/>
+    
+    <!-- 日历顶部 -->
+    <rect x="100" y="100" width="300" height="50" rx="20" ry="20" fill="#0a7ea4"/>
+    <rect x="100" y="130" width="300" height="20" fill="#0a7ea4"/>
+    
+    <!-- 日历格子 -->
+    <line x1="166" y1="180" x2="166" y2="400" stroke="#dddddd" stroke-width="2"/>
+    <line x1="232" y1="180" x2="232" y2="400" stroke="#dddddd" stroke-width="2"/>
+    <line x1="298" y1="180" x2="298" y2="400" stroke="#dddddd" stroke-width="2"/>
+    <line x1="364" y1="180" x2="364" y2="400" stroke="#dddddd" stroke-width="2"/>
+    
+    <line x1="100" y1="235" x2="400" y2="235" stroke="#dddddd" stroke-width="2"/>
+    <line x1="100" y1="290" x2="400" y2="290" stroke="#dddddd" stroke-width="2"/>
+    <line x1="100" y1="345" x2="400" y2="345" stroke="#dddddd" stroke-width="2"/>
+    
+    <!-- 叹号标志 -->
+    <circle cx="250" cy="260" r="50" fill="#ffcc00" opacity="0.8"/>
+    <rect x="245" y="230" width="10" height="40" rx="5" ry="5" fill="white"/>
+    <circle cx="250" cy="285" r="5" fill="white"/>
+    
+    <!-- 提示箭头 -->
+    <path d="M320 350 L350 380 L380 350" stroke="#0a7ea4" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>`;
+  
   // 加载模拟数据
   useEffect(() => {
     // 模拟从数据库加载数据
@@ -46,28 +75,43 @@ export default function DateScreen() {
         {
           id: '1',
           date: today,
-          daysSinceLastRecord: 0 // 修正为0天，因为是同一天的记录
-        },
-        {
-          id: '2',
-          date: new Date(today.getTime() - 5 * 24 * 60 * 60 * 1000), // 5天前
-          daysSinceLastRecord: 10
-        },
-        {
-          id: '3',
-          date: new Date(today.getTime() - 15 * 24 * 60 * 60 * 1000), // 15天前
           daysSinceLastRecord: null // 首次记录
         }
       ];
-      
-      // 按日期降序排序（最近的日期在前）
-      mockData.sort((a, b) => b.date.getTime() - a.date.getTime());
       
       setDateRecords(mockData);
     };
     
     loadData();
   }, []);
+  
+  // 更新所有记录的天数差
+  const updateRecordIntervals = (records: DateRecord[]) => {
+    if (records.length === 0) return records;
+    
+    // 按日期降序排序（最近的日期在前）
+    const sortedRecords = [...records].sort((a, b) => b.date.getTime() - a.date.getTime());
+    
+    // 更新每条记录的天数差
+    const updatedRecords = sortedRecords.map((record, index) => {
+      if (index === sortedRecords.length - 1) {
+        // 最后一条记录（最早的记录）应该是首次记录
+        return { ...record, daysSinceLastRecord: null };
+      } else {
+        // 计算与下一条记录的天数差
+        const currentDate = new Date(record.date);
+        const nextDate = new Date(sortedRecords[index + 1].date);
+        
+        // 计算天数差（向下取整）
+        const diffTime = Math.abs(currentDate.getTime() - nextDate.getTime());
+        const diffDays = Math.floor(diffTime / (24 * 60 * 60 * 1000));
+        
+        return { ...record, daysSinceLastRecord: diffDays };
+      }
+    });
+    
+    return updatedRecords;
+  };
   
   // 格式化日期为字符串
   const formatDate = (date: Date): string => {
@@ -76,14 +120,28 @@ export default function DateScreen() {
   
   // 显示日期选择器
   const showDatePicker = () => {
-    // 显示自定义日期选择模态框
+    setSelectedDate(new Date());
     setDatePickerVisible(true);
   };
   
-  // 自定义日期选择方法
-  const handleDateSelect = (date: Date) => {
+  // 处理日期选择
+  const handleDateChange = (event: any, date?: Date) => {
+    setDatePickerVisible(Platform.OS === 'ios'); // 在 iOS 上保持打开，Android 上自动关闭
+    
+    if (date) {
+      setSelectedDate(date);
+      
+      if (Platform.OS === 'android') {
+        // 在 Android 上，选择日期后立即添加记录
+        addNewRecord(date);
+      }
+    }
+  };
+  
+  // 确认选择的日期（iOS）
+  const confirmIOSDate = () => {
     setDatePickerVisible(false);
-    addNewRecord(date);
+    addNewRecord(selectedDate);
   };
   
   // 关闭日期选择器
@@ -92,39 +150,37 @@ export default function DateScreen() {
   };
   
   // 处理添加新日期记录
-  const addNewRecord = (selectedDate: Date) => {
-    let daysSinceLastRecord = 0;
+  const addNewRecord = (newDate: Date) => {
+    // 检查是否已存在相同日期的记录
+    const isSameDayExists = dateRecords.some(record => {
+      const recordDate = new Date(record.date);
+      return (
+        recordDate.getFullYear() === newDate.getFullYear() &&
+        recordDate.getMonth() === newDate.getMonth() &&
+        recordDate.getDate() === newDate.getDate()
+      );
+    });
     
-    // 如果已有记录，计算与最近记录的天数差
-    if (dateRecords.length > 0) {
-      const lastDate = dateRecords[0].date; // 最近的记录（已按日期降序排序）
-      
-      // 计算天数差（向上取整）
-      const diffTime = Math.abs(selectedDate.getTime() - lastDate.getTime());
-      
-      // 使用向下取整并检查是否为同一天
-      if (
-        selectedDate.getFullYear() === lastDate.getFullYear() &&
-        selectedDate.getMonth() === lastDate.getMonth() &&
-        selectedDate.getDate() === lastDate.getDate()
-      ) {
-        daysSinceLastRecord = 0; // 如果是同一天，则设为0天
-      } else {
-        // 否则计算天数差（按照日期计算，不考虑时分秒）
-        const oneDayMs = 24 * 60 * 60 * 1000;
-        daysSinceLastRecord = Math.floor(diffTime / oneDayMs);
-      }
+    // 如果已存在相同日期的记录，直接返回不添加
+    if (isSameDayExists) {
+      Alert.alert(
+        "提示",
+        "该日期已有记录，无需重复添加",
+        [{ text: "确定", style: "default" }]
+      );
+      return;
     }
     
     // 创建新记录
     const newRecord: DateRecord = {
       id: Date.now().toString(), // 使用当前时间戳作为ID
-      date: selectedDate,
-      daysSinceLastRecord
+      date: newDate,
+      daysSinceLastRecord: 0 // 临时值，将在 updateRecordIntervals 中更新
     };
     
-    // 更新状态，将新记录添加到数组开头
-    setDateRecords([newRecord, ...dateRecords]);
+    // 更新状态，将新记录添加到数组
+    const updatedRecords = updateRecordIntervals([newRecord, ...dateRecords]);
+    setDateRecords(updatedRecords);
   };
   
   // 处理删除记录
@@ -143,50 +199,9 @@ export default function DateScreen() {
             // 删除指定的记录
             const updatedRecords = dateRecords.filter(record => record.id !== id);
             
-            // 更新第一条记录的daysSinceLastRecord（如果存在）
-            if (updatedRecords.length > 0 && updatedRecords.length < dateRecords.length) {
-              // 如果删除的是第一条记录，需要更新新的第一条记录
-              const deletedRecord = dateRecords.find(record => record.id === id);
-              const deletedIndex = dateRecords.findIndex(record => record.id === id);
-              
-              // 如果删除的是第一条记录，且还有其他记录
-              if (deletedIndex === 0 && updatedRecords.length > 0) {
-                const nextRecord = updatedRecords[0];
-                const nextNextRecord = updatedRecords[1]; // 可能不存在
-                
-                if (nextNextRecord) {
-                  // 检查是否是同一天
-                  if (
-                    nextRecord.date.getFullYear() === nextNextRecord.date.getFullYear() &&
-                    nextRecord.date.getMonth() === nextNextRecord.date.getMonth() &&
-                    nextRecord.date.getDate() === nextNextRecord.date.getDate()
-                  ) {
-                    updatedRecords[0] = {
-                      ...nextRecord,
-                      daysSinceLastRecord: 0 // 同一天设置为0
-                    };
-                  } else {
-                    // 否则计算天数差
-                    const oneDayMs = 24 * 60 * 60 * 1000;
-                    const diffTime = Math.abs(nextRecord.date.getTime() - nextNextRecord.date.getTime());
-                    const diffDays = Math.floor(diffTime / oneDayMs);
-                    
-                    updatedRecords[0] = {
-                      ...nextRecord,
-                      daysSinceLastRecord: diffDays
-                    };
-                  }
-                } else {
-                  // 如果只剩一条记录，将其设为首次记录
-                  updatedRecords[0] = {
-                    ...nextRecord,
-                    daysSinceLastRecord: null
-                  };
-                }
-              }
-            }
-            
-            setDateRecords(updatedRecords);
+            // 更新所有记录的天数差
+            const processedRecords = updateRecordIntervals(updatedRecords);
+            setDateRecords(processedRecords);
           }
         }
       ]
@@ -195,7 +210,6 @@ export default function DateScreen() {
   
   // 渲染列表项右侧的删除按钮
   const renderRightActions = (id: string, progress: any) => {
-    // 使用列表项的高度来动态计算删除按钮高度
     return (
       <TouchableOpacity
         style={[styles.deleteAction]}
@@ -212,22 +226,29 @@ export default function DateScreen() {
         headerBackgroundColor={{ light: '#FFF5E6', dark: '#352E21' }}
         headerImage={
           <IconSymbol
-            size={140}
+            size={120} // 减小图标尺寸
             color={iconColor}
             name="calendar"
             style={styles.headerImage}
           />
-        }>
+        }
+        headerHeight={180} // 添加自定义参数来减少顶部高度
+      >
         <ThemedView style={styles.titleContainer}>
           <ThemedText type="title">记录日期</ThemedText>
         </ThemedView>
         
         <ThemedView style={styles.dateContainer}>
-          <ThemedText type="subtitle">所有记录</ThemedText>
           
           {dateRecords.length === 0 ? (
             <ThemedView style={styles.emptyContainer}>
-              <ThemedText>暂无记录，点击右下角按钮添加</ThemedText>
+              <SvgXml
+                xml={noDataSvg}
+                width={200}
+                height={200}
+                style={styles.emptyImage}
+              />
+              <ThemedText style={styles.emptyText}>暂无记录，点击右下角按钮添加</ThemedText>
             </ThemedView>
           ) : (
             dateRecords.map((record) => (
@@ -245,9 +266,7 @@ export default function DateScreen() {
                       <ThemedText style={styles.intervalText}>
                         {record.daysSinceLastRecord === null
                           ? '首次记录'
-                          : record.daysSinceLastRecord === 0
-                            ? '今日已有记录'
-                            : `距上次记录: ${record.daysSinceLastRecord}天`}
+                          : `距上次记录: ${record.daysSinceLastRecord}天`}
                       </ThemedText>
                     </ThemedView>
                   </ThemedView>
@@ -256,85 +275,9 @@ export default function DateScreen() {
             ))
           )}
         </ThemedView>
-        
-        {/* 日期选择面板 - 当datePickerVisible为true时显示 */}
-        {datePickerVisible && (
-          <ThemedView style={styles.datePickerOverlay}>
-            <ThemedView style={styles.datePickerContainer}>
-              <ThemedText type="subtitle" style={styles.datePickerTitle}>选择日期</ThemedText>
-              
-              <ThemedView style={styles.calendarButtonsContainer}>
-                {/* 今天按钮 */}
-                <TouchableOpacity
-                  style={[styles.dateButton, { backgroundColor: tintColor }]}
-                  onPress={() => handleDateSelect(new Date())}
-                >
-                  <ThemedText style={styles.dateButtonText}>今天</ThemedText>
-                </TouchableOpacity>
-                
-                {/* 昨天按钮 */}
-                <TouchableOpacity
-                  style={[styles.dateButton, { backgroundColor: tintColor }]}
-                  onPress={() => {
-                    const yesterday = new Date();
-                    yesterday.setDate(yesterday.getDate() - 1);
-                    handleDateSelect(yesterday);
-                  }}
-                >
-                  <ThemedText style={styles.dateButtonText}>昨天</ThemedText>
-                </TouchableOpacity>
-                
-                {/* 前天按钮 */}
-                <TouchableOpacity
-                  style={[styles.dateButton, { backgroundColor: tintColor }]}
-                  onPress={() => {
-                    const dayBeforeYesterday = new Date();
-                    dayBeforeYesterday.setDate(dayBeforeYesterday.getDate() - 2);
-                    handleDateSelect(dayBeforeYesterday);
-                  }}
-                >
-                  <ThemedText style={styles.dateButtonText}>前天</ThemedText>
-                </TouchableOpacity>
-              </ThemedView>
-              
-              <ThemedView style={styles.calendarButtonsContainer}>
-                {/* 上周按钮 */}
-                <TouchableOpacity
-                  style={[styles.dateButton, { backgroundColor: tintColor }]}
-                  onPress={() => {
-                    const lastWeek = new Date();
-                    lastWeek.setDate(lastWeek.getDate() - 7);
-                    handleDateSelect(lastWeek);
-                  }}
-                >
-                  <ThemedText style={styles.dateButtonText}>一周前</ThemedText>
-                </TouchableOpacity>
-                
-                {/* 上月按钮 */}
-                <TouchableOpacity
-                  style={[styles.dateButton, { backgroundColor: tintColor }]}
-                  onPress={() => {
-                    const lastMonth = new Date();
-                    lastMonth.setMonth(lastMonth.getMonth() - 1);
-                    handleDateSelect(lastMonth);
-                  }}
-                >
-                  <ThemedText style={styles.dateButtonText}>一月前</ThemedText>
-                </TouchableOpacity>
-              </ThemedView>
-              
-              <TouchableOpacity
-                style={styles.cancelButton}
-                onPress={closeDatePicker}
-              >
-                <ThemedText style={styles.cancelButtonText}>取消</ThemedText>
-              </TouchableOpacity>
-            </ThemedView>
-          </ThemedView>
-        )}
       </ParallaxScrollView>
       
-      {/* 添加按钮 - 将其放置在视图层次结构的最外层，确保它总是可见 */}
+      {/* 添加按钮 */}
       <Animated.View style={styles.addButtonContainer}>
         <TouchableOpacity
           style={[styles.addButton, { backgroundColor: tintColor }]}
@@ -344,6 +287,42 @@ export default function DateScreen() {
           <IconSymbol name="add" size={28} color="#FFFFFF" />
         </TouchableOpacity>
       </Animated.View>
+
+      {/* 日期选择器 - 移到视图层级最外层，确保显示在最上方 */}
+      {datePickerVisible && (
+        <ThemedView style={styles.datePickerOverlay}>
+          <ThemedView style={styles.datePickerContainer}>
+            <ThemedText type="subtitle" style={styles.datePickerTitle}>选择日期</ThemedText>
+            
+            <DateTimePicker
+              value={selectedDate}
+              mode="date"
+              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              onChange={handleDateChange}
+              maximumDate={new Date()} // 限制只能选择今天及以前的日期
+              style={styles.datePicker}
+            />
+            
+            {Platform.OS === 'ios' && (
+              <ThemedView style={styles.buttonContainer}>
+                <TouchableOpacity
+                  style={[styles.cancelButton]}
+                  onPress={closeDatePicker}
+                >
+                  <ThemedText style={styles.cancelButtonText}>取消</ThemedText>
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                  style={[styles.confirmButton, { backgroundColor: tintColor }]}
+                  onPress={confirmIOSDate}
+                >
+                  <ThemedText style={styles.confirmButtonText}>确定</ThemedText>
+                </TouchableOpacity>
+              </ThemedView>
+            )}
+          </ThemedView>
+        </ThemedView>
+      )}
     </ThemedView>
   );
 }
@@ -353,8 +332,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerImage: {
-    bottom: -50,
-    right: -30,
+    bottom: -30, // 调整图标位置向上移动
+    right: -20, // 调整图标位置向左移动
     position: 'absolute',
     opacity: 0.7,
   },
@@ -371,6 +350,15 @@ const styles = StyleSheet.create({
     padding: 20,
     alignItems: 'center',
     justifyContent: 'center',
+    marginTop: 0, // 将顶部间距移除
+  },
+  emptyImage: {
+    marginBottom: 16, // 减少与文字的间距
+  },
+  emptyText: {
+    fontSize: 16,
+    opacity: 0.7,
+    textAlign: 'center',
   },
   dateItem: {
     padding: 16,
@@ -421,7 +409,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 1000,
+    zIndex: 2000, // 提高z-index确保在最上层
   },
   datePickerContainer: {
     width: 300,
@@ -433,38 +421,48 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
-    elevation: 5,
+    elevation: 10, // 提高elevation值
+    position: 'absolute', // 使用绝对定位
+    top: '50%', // 居中显示
+    left: '50%',
+    transform: [{ translateX: -150 }, { translateY: -150 }], // 水平和垂直居中
   },
   datePickerTitle: {
     marginBottom: 20,
     fontSize: 20,
   },
-  calendarButtonsContainer: {
+  datePicker: {
+    width: 260,
+    height: 200,
+  },
+  buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
-    marginBottom: 15,
+    marginTop: 20,
   },
-  dateButton: {
+  cancelButton: {
     flex: 1,
-    marginHorizontal: 5,
+    marginRight: 10,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F2F2F2',
+  },
+  confirmButton: {
+    flex: 1,
+    marginLeft: 10,
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  dateButtonText: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
-  },
-  cancelButton: {
-    marginTop: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    backgroundColor: '#F2F2F2',
-  },
   cancelButtonText: {
     color: '#333333',
+  },
+  confirmButtonText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
   },
 });
