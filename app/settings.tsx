@@ -1,17 +1,17 @@
-import { StyleSheet, Switch, ScrollView, TouchableOpacity, Alert, Platform } from 'react-native';
-import React, { useState } from 'react';
+import { StyleSheet, Switch, ScrollView, TouchableOpacity, Alert, Platform, View } from 'react-native';
+import React, { useState, useEffect } from 'react';
 import { Stack } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as FileSystem from 'expo-file-system';
 import * as DocumentPicker from 'expo-document-picker';
 import * as Sharing from 'expo-sharing';
-import * as Crypto from 'expo-crypto';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
+import { useThemeContext } from '@/hooks/useThemeContext';
 import { useColorScheme } from '@/hooks/useColorScheme';
 
 // 本地存储键名（与 date.tsx 一致）
@@ -21,20 +21,36 @@ const STORAGE_KEY = 'ipredict_date_records';
 const ENCRYPTION_KEY = 'ipredict_secure_key_2025';
 
 export default function SettingsScreen() {
-  const colorScheme = useColorScheme() ?? 'light';
+  const colorScheme = useColorScheme();
+  const { themeMode, setThemeMode } = useThemeContext();
+  
   const iconColor = Colors[colorScheme].icon;
   const tintColor = Colors[colorScheme].tint;
   
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const [darkModeEnabled, setDarkModeEnabled] = useState(colorScheme === 'dark');
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [vibrationEnabled, setVibrationEnabled] = useState(true);
+  const [darkModeEnabled, setDarkModeEnabled] = useState(colorScheme === 'dark');
+  
+  // 当系统主题变化时更新开关状态
+  useEffect(() => {
+    setDarkModeEnabled(colorScheme === 'dark');
+  }, [colorScheme]);
   
   const toggleSwitch = (setter: React.Dispatch<React.SetStateAction<boolean>>, value: boolean) => {
     if (Platform.OS === 'ios' && vibrationEnabled) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
     setter(value);
+  };
+  
+  // 切换深色模式
+  const toggleDarkMode = (value: boolean) => {
+    if (Platform.OS === 'ios' && vibrationEnabled) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    setDarkModeEnabled(value);
+    setThemeMode(value ? 'dark' : 'light');
   };
 
   // 使用简单的Base64编码作为"加密"（在实际应用中，应使用更安全的加密方法）
@@ -230,6 +246,32 @@ export default function SettingsScreen() {
       ]
     );
   };
+  
+  // 添加系统主题选择器
+  const showThemeSelector = () => {
+    Alert.alert(
+      '选择主题',
+      '请选择应用主题模式',
+      [
+        {
+          text: '浅色',
+          onPress: () => setThemeMode('light')
+        },
+        {
+          text: '深色',
+          onPress: () => setThemeMode('dark')
+        },
+        {
+          text: '跟随系统',
+          onPress: () => setThemeMode('system')
+        },
+        {
+          text: '取消',
+          style: 'cancel'
+        }
+      ]
+    );
+  };
 
   return (
     <>
@@ -260,47 +302,22 @@ export default function SettingsScreen() {
               />
             </ThemedView>
             
-            <ThemedView style={styles.settingItem}>
-              <ThemedView style={styles.settingInfo}>
-                <IconSymbol name="dark_mode" size={24} color={iconColor} />
-                <ThemedText style={styles.settingText}>深色模式</ThemedText>
-              </ThemedView>
-              <Switch
-                trackColor={{ false: '#767577', true: tintColor }}
-                thumbColor="#f4f3f4"
-                ios_backgroundColor="#3e3e3e"
-                onValueChange={(value) => toggleSwitch(setDarkModeEnabled, value)}
-                value={darkModeEnabled}
-              />
-            </ThemedView>
             
-            <ThemedView style={styles.settingItem}>
+            <TouchableOpacity
+              style={styles.buttonItem}
+              onPress={showThemeSelector}
+            >
               <ThemedView style={styles.settingInfo}>
-                <IconSymbol name="volume_up" size={24} color={iconColor} />
-                <ThemedText style={styles.settingText}>声音</ThemedText>
+                <IconSymbol name="public" size={24} color={iconColor} />
+                <View style={{ flex: 1 }}>
+                  <ThemedText style={styles.settingText}>主题设置</ThemedText>
+                  <ThemedText style={styles.settingSubtext}>
+                    {themeMode === 'system' ? '跟随系统' : themeMode === 'dark' ? '深色' : '浅色'}
+                  </ThemedText>
+                </View>
               </ThemedView>
-              <Switch
-                trackColor={{ false: '#767577', true: tintColor }}
-                thumbColor="#f4f3f4"
-                ios_backgroundColor="#3e3e3e"
-                onValueChange={(value) => toggleSwitch(setSoundEnabled, value)}
-                value={soundEnabled}
-              />
-            </ThemedView>
-            
-            <ThemedView style={styles.settingItem}>
-              <ThemedView style={styles.settingInfo}>
-                <IconSymbol name="vibration" size={24} color={iconColor} />
-                <ThemedText style={styles.settingText}>震动</ThemedText>
-              </ThemedView>
-              <Switch
-                trackColor={{ false: '#767577', true: tintColor }}
-                thumbColor="#f4f3f4"
-                ios_backgroundColor="#3e3e3e"
-                onValueChange={(value) => toggleSwitch(setVibrationEnabled, value)}
-                value={vibrationEnabled}
-              />
-            </ThemedView>
+              <IconSymbol name="chevron_right" size={24} color={iconColor} />
+            </TouchableOpacity>
           </ThemedView>
           
           <ThemedView style={styles.section}>
@@ -340,43 +357,6 @@ export default function SettingsScreen() {
             </TouchableOpacity>
           </ThemedView>
           
-          <ThemedView style={styles.section}>
-            <ThemedText type="subtitle">其他</ThemedText>
-            
-            <TouchableOpacity
-              style={styles.buttonItem}
-              onPress={() => {
-                if (Platform.OS === 'ios' && vibrationEnabled) {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                }
-                // 这里添加评分功能
-                console.log('给我们评分');
-              }}
-            >
-              <ThemedView style={styles.settingInfo}>
-                <IconSymbol name="star" size={24} color={iconColor} />
-                <ThemedText style={styles.settingText}>给我们评分</ThemedText>
-              </ThemedView>
-              <IconSymbol name="chevron_right" size={24} color={iconColor} />
-            </TouchableOpacity>
-            
-            <TouchableOpacity
-              style={styles.buttonItem}
-              onPress={() => {
-                if (Platform.OS === 'ios' && vibrationEnabled) {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                }
-                // 这里添加反馈功能
-                console.log('问题反馈');
-              }}
-            >
-              <ThemedView style={styles.settingInfo}>
-                <IconSymbol name="feedback" size={24} color={iconColor} />
-                <ThemedText style={styles.settingText}>问题反馈</ThemedText>
-              </ThemedView>
-              <IconSymbol name="chevron_right" size={24} color={iconColor} />
-            </TouchableOpacity>
-          </ThemedView>
           
           <ThemedText style={styles.version}>版本 1.0.0</ThemedText>
         </ThemedView>
@@ -414,9 +394,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+    flex: 1,
   },
   settingText: {
     fontSize: 16,
+  },
+  settingSubtext: {
+    fontSize: 12,
+    opacity: 0.7,
+    marginTop: 2,
   },
   dangerButton: {
     marginTop: 8,

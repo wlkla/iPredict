@@ -14,7 +14,6 @@ export const Gradients = {
     start: { x: 0, y: 0 },
     end: { x: 1, y: 0 }
   },
-  // 暗色主题的颜色
   primaryDark: {
     colors: ['#0077B6', '#48BFE3'],
     start: { x: 0, y: 0 },
@@ -25,7 +24,6 @@ export const Gradients = {
     start: { x: 0, y: 0 },
     end: { x: 1, y: 0 }
   },
-  // 新增各个页面专用渐变色
   countdown: {
     light: {
       colors: ['#00C9FF', '#92FE9D'],
