@@ -4,6 +4,7 @@ import { StyleProp, ViewStyle } from 'react-native';
 // iOS平台上的SF Symbols映射
 const SF_SYMBOLS_MAPPING = {
   // 系统图标名称映射
+  'pie_chart': 'chart.pie.fill',
   'timer': 'timer',
   'calendar': 'calendar',
   'analytics': 'chart.bar.fill',

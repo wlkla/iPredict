@@ -1,5 +1,5 @@
 import { StyleSheet, Platform, Dimensions, TouchableOpacity, View } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -9,6 +9,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Svg, Circle, Path, G, Text as SvgText, Line } from 'react-native-svg';
+import { useFocusEffect } from '@react-navigation/native';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -34,8 +35,8 @@ type ChartType = 'line' | 'bar' | 'pie';
 
 // 频率数据结构
 interface FrequencyData {
-  month: string;
-  count: number;
+  interval: number; // 间隔天数
+  count: number;    // 出现次数
 }
 
 export default function AnalyticsScreen() {
@@ -45,55 +46,53 @@ export default function AnalyticsScreen() {
   
   // 状态管理
   const [dateRecords, setDateRecords] = useState<DateRecord[]>([]);
-  const [chartType, setChartType] = useState<ChartType>('line');
+  const [chartType, setChartType] = useState<ChartType>('line'); // 默认显示柱状图
   const [intervalData, setIntervalData] = useState<number[]>([]);
-  const [frequencyData, setFrequencyData] = useState<FrequencyData[]>([]);
+  const [intervalFrequencyData, setIntervalFrequencyData] = useState<FrequencyData[]>([]);
   const [hasData, setHasData] = useState<boolean>(false);
   
-  // 加载本地存储数据
-  useEffect(() => {
-    loadRecordsFromStorage();
-  }, []);
+  // 使用 useFocusEffect 来确保每次页面获取焦点时重新加载数据
+  useFocusEffect(
+    useCallback(() => {
+      console.log('Analytics screen focused, reloading data...');
+      loadRecordsFromStorage();
+      return () => {};
+    }, [])
+  );
   
   // 数据处理
   useEffect(() => {
     if (dateRecords.length > 0) {
+      console.log('Processing date records, count:', dateRecords.length);
+      
       // 计算时间间隔数据
       const intervals = dateRecords
         .filter(record => record.daysSinceLastRecord !== null)
-        .map(record => record.daysSinceLastRecord as number)
-        .slice(0, 7); // 最多显示7条
+        .map(record => record.daysSinceLastRecord as number);
       
       setIntervalData(intervals);
+      console.log('Interval data:', intervals);
       
-      // 计算月份频率数据
-      const frequencyMap = new Map<string, number>();
+      // 计算间隔频率数据
+      const frequencyMap = new Map<number, number>();
       
-      dateRecords.forEach(record => {
-        const date = new Date(record.date);
-        const monthKey = `${date.getFullYear()}-${date.getMonth() + 1}`;
-        const monthLabel = `${date.getFullYear()}年${date.getMonth() + 1}月`;
-        
-        if (frequencyMap.has(monthLabel)) {
-          frequencyMap.set(monthLabel, frequencyMap.get(monthLabel)! + 1);
+      intervals.forEach(interval => {
+        if (frequencyMap.has(interval)) {
+          frequencyMap.set(interval, frequencyMap.get(interval)! + 1);
         } else {
-          frequencyMap.set(monthLabel, 1);
+          frequencyMap.set(interval, 1);
         }
       });
       
-      // 转换为数组并按月份排序
-      const frequencyArray = Array.from(frequencyMap, ([month, count]) => ({ month, count }));
-      frequencyArray.sort((a, b) => {
-        const [yearA, monthA] = a.month.split('年').map(part => parseInt(part));
-        const [yearB, monthB] = b.month.split('年').map(part => parseInt(part));
-        
-        if (yearA !== yearB) return yearA - yearB;
-        return monthA - monthB;
-      });
+      // 转换为数组并按间隔天数排序
+      const frequencyArray = Array.from(frequencyMap, ([interval, count]) => ({ interval, count }));
+      frequencyArray.sort((a, b) => a.interval - b.interval);
       
-      setFrequencyData(frequencyArray.slice(0, 6)); // 最多显示6个月
-      setHasData(true);
+      console.log('Interval frequency data:', frequencyArray);
+      setIntervalFrequencyData(frequencyArray);
+      setHasData(intervals.length > 0);
     } else {
+      console.log('No date records to process');
       setHasData(false);
     }
   }, [dateRecords]);
@@ -102,6 +101,7 @@ export default function AnalyticsScreen() {
   const loadRecordsFromStorage = async () => {
     try {
       const storedRecords = await AsyncStorage.getItem(STORAGE_KEY);
+      console.log('Retrieved records from storage:', storedRecords ? 'Data exists' : 'No data');
       
       if (storedRecords) {
         // 解析存储的 JSON 字符串，并转换日期字符串为 Date 对象
@@ -110,10 +110,16 @@ export default function AnalyticsScreen() {
           date: new Date(record.date)
         }));
         
-        // 按日期降序排序
-        parsedRecords.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        console.log('Parsed records count:', parsedRecords.length);
+        
+        // 按日期降序排序，直接使用 date 对象的 getTime 方法
+        parsedRecords.sort((a, b) => b.date.getTime() - a.date.getTime());
         
         setDateRecords(parsedRecords);
+        console.log('Set date records:', parsedRecords.length);
+      } else {
+        console.log('No records found in storage');
+        setDateRecords([]);
       }
     } catch (error) {
       console.error('Error loading records from storage:', error);
@@ -225,9 +231,9 @@ export default function AnalyticsScreen() {
     );
   };
   
-  // 柱状图组件
+  // 柱状图组件 - 间隔天数频率分布
   const BarChart = () => {
-    if (frequencyData.length === 0) return null;
+    if (intervalFrequencyData.length === 0) return null;
     
     const chartWidth = width - 64; // 减去内边距
     const chartHeight = 200;
@@ -235,8 +241,8 @@ export default function AnalyticsScreen() {
     const graphWidth = chartWidth - padding * 2;
     const graphHeight = chartHeight - padding * 2;
     
-    const maxValue = Math.max(...frequencyData.map(d => d.count), 1); // 至少为1，防止除以0
-    const barWidth = (graphWidth / frequencyData.length) * 0.7; // 留30%的间隙
+    const maxValue = Math.max(...intervalFrequencyData.map(d => d.count), 1); // 至少为1，防止除以0
+    const barWidth = (graphWidth / intervalFrequencyData.length) * 0.7; // 留30%的间隙
     
     return (
       <Svg width={chartWidth} height={chartHeight}>
@@ -261,9 +267,9 @@ export default function AnalyticsScreen() {
         />
         
         {/* 柱状 */}
-        {frequencyData.map((data, index) => {
+        {intervalFrequencyData.map((data, index) => {
           const barHeight = (data.count / maxValue) * graphHeight;
-          const x = padding + index * (graphWidth / frequencyData.length) + (graphWidth / frequencyData.length - barWidth) / 2;
+          const x = padding + index * (graphWidth / intervalFrequencyData.length) + (graphWidth / intervalFrequencyData.length - barWidth) / 2;
           const y = chartHeight - padding - barHeight;
           
           return (
@@ -288,11 +294,11 @@ export default function AnalyticsScreen() {
               <SvgText
                 x={x + barWidth / 2}
                 y={chartHeight - 5}
-                fontSize="8"
+                fontSize="10"
                 fill={colorScheme === 'dark' ? '#ccc' : '#666'}
                 textAnchor="middle"
               >
-                {data.month.slice(-2)}
+                {data.interval}
               </SvgText>
             </G>
           );
@@ -323,105 +329,87 @@ export default function AnalyticsScreen() {
     );
   };
   
-  // 饼图组件
-  const PieChart = () => {
-    if (frequencyData.length === 0) return null;
-    
-    const chartSize = Math.min(width - 64, 200); // 减去内边距
-    const radius = chartSize / 2 - 20; // 减去边距
-    const centerX = chartSize / 2;
-    const centerY = chartSize / 2;
-    
-    const total = frequencyData.reduce((sum, data) => sum + data.count, 0);
-    
-    // 计算每个扇形
-    let startAngle = 0;
-    const sectors = frequencyData.map((data, index) => {
-      const percentage = data.count / total;
-      const endAngle = startAngle + percentage * 2 * Math.PI;
+    // 饼图组件 - 间隔天数频率分布
+    const PieChart = () => {
+      if (intervalFrequencyData.length === 0) return null;
       
-      const x1 = centerX + radius * Math.cos(startAngle);
-      const y1 = centerY + radius * Math.sin(startAngle);
-      const x2 = centerX + radius * Math.cos(endAngle);
-      const y2 = centerY + radius * Math.sin(endAngle);
+      const chartSize = Math.min(width - 64, 200); // 减去内边距
+      const radius = chartSize / 2 - 2; // 减去边距
+      const centerX = chartSize / 2;
+      const centerY = chartSize / 2;
       
-      const largeArcFlag = endAngle - startAngle > Math.PI ? 1 : 0;
+      const total = intervalFrequencyData.reduce((sum, data) => sum + data.count, 0);
       
-      // 标签位置
-      const labelAngle = startAngle + (endAngle - startAngle) / 2;
-      const labelRadius = radius * 0.7; // 标签在半径70%处
-      const labelX = centerX + labelRadius * Math.cos(labelAngle);
-      const labelY = centerY + labelRadius * Math.sin(labelAngle);
-      
-      // 计算百分比
-      const percentText = `${Math.round(percentage * 100)}%`;
-      
-      // 饼图颜色
-      const colors = [
-        chartColor,
-        '#FF7043',
-        '#66BB6A',
-        '#42A5F5',
-        '#AB47BC',
-        '#FFA726',
-        '#EC407A',
-        '#26C6DA'
-      ];
-      const color = colors[index % colors.length];
-      
-      const result = {
-        path: `M ${centerX} ${centerY} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2} Z`,
-        color: color,
-        labelX,
-        labelY,
-        percentText,
-        month: data.month // 添加月份信息用于图例
-      };
-      
-      startAngle = endAngle;
-      return result;
-    });
-    
-    return (
-      <ThemedView style={styles.pieChartContainer}>
-        <Svg width={chartSize} height={chartSize}>
-          {sectors.map((sector, index) => (
-            <G key={index}>
-              <Path
-                d={sector.path}
-                fill={sector.color}
-              />
-              <SvgText
-                x={sector.labelX}
-                y={sector.labelY}
-                fontSize="11"
-                fontWeight="bold"
-                fill="#fff"
-                textAnchor="middle"
-              >
-                {sector.percentText}
-              </SvgText>
-            </G>
-          ))}
-        </Svg>
+      // 计算每个扇形
+      let startAngle = 0;
+      const sectors = intervalFrequencyData.map((data, index) => {
+        const percentage = data.count / total;
+        const endAngle = startAngle + percentage * 2 * Math.PI;
         
-        {/* 添加图例 */}
-        <ThemedView style={styles.legendContainer}>
-          {sectors.map((sector, index) => (
-            <ThemedView key={index} style={styles.legendItem}>
-              <ThemedView
-                style={[styles.legendColor, {backgroundColor: sector.color}]}
-              />
-              <ThemedText style={styles.legendText}>
-                {sector.month} ({sector.percentText})
-              </ThemedText>
-            </ThemedView>
-          ))}
+        const x1 = centerX + radius * Math.cos(startAngle);
+        const y1 = centerY + radius * Math.sin(startAngle);
+        const x2 = centerX + radius * Math.cos(endAngle);
+        const y2 = centerY + radius * Math.sin(endAngle);
+        
+        const largeArcFlag = endAngle - startAngle > Math.PI ? 1 : 0;
+        
+        // 标签位置
+        const labelAngle = startAngle + (endAngle - startAngle) / 2;
+        const labelRadius = radius * 0.5; // 标签在半径70%处
+        const labelX = centerX + labelRadius * Math.cos(labelAngle);
+        const labelY = centerY + labelRadius * Math.sin(labelAngle);
+        
+        // 饼图颜色
+        const colors = [
+          chartColor,
+          '#FF7043',
+          '#66BB6A',
+          '#42A5F5',
+          '#AB47BC',
+          '#FFA726',
+        ];
+        const color = colors[index % colors.length];
+        
+        const result = {
+          path: `M ${centerX} ${centerY} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2} Z`,
+          color: color,
+          labelX,
+          labelY,
+          interval: data.interval,
+          count: data.count,
+          percentage
+        };
+        
+        startAngle = endAngle;
+        return result;
+      });
+      
+      return (
+        <ThemedView style={styles.pieChartContainer}>
+          <Svg width={chartSize} height={chartSize}>
+            {sectors.map((sector, index) => (
+              <G key={index}>
+                <Path
+                  d={sector.path}
+                  fill={sector.color}
+                />
+                <SvgText
+                  x={sector.labelX}
+                  y={sector.labelY}
+                  fontSize="11"
+                  fontWeight="bold"
+                  fill="#fff"
+                  textAnchor="middle"
+                >
+                  {`${sector.interval}(${(sector.percentage * 100).toFixed(1)}%)`}
+                </SvgText>
+              </G>
+            ))}
+          </Svg>
         </ThemedView>
-      </ThemedView>
-    );
-  };
-  
+      );
+    };
+
   // 图表选择器
   const ChartSelector = () => {
     return (
@@ -444,7 +432,7 @@ export default function AnalyticsScreen() {
           style={[styles.chartButton, chartType === 'pie' && styles.chartButtonActive]}
           onPress={() => setChartType('pie')}
         >
-          <IconSymbol name="trending_up" size={20} color={chartType === 'pie' ? '#fff' : iconColor} />
+          <IconSymbol name="pie_chart" size={20} color={chartType === 'pie' ? '#fff' : iconColor} />
         </TouchableOpacity>
       </ThemedView>
     );
@@ -499,7 +487,7 @@ export default function AnalyticsScreen() {
           <ThemedView style={styles.chartHeader}>
             <ThemedText type="defaultSemiBold">
               {chartType === 'line' ? '间隔天数趋势' :
-               chartType === 'bar' ? '月度记录频率' : '记录月份分布'}
+               chartType === 'bar' ? '间隔天数频率分布' : '间隔天数比例分布'}
             </ThemedText>
             <ChartSelector />
           </ThemedView>
@@ -525,7 +513,16 @@ export default function AnalyticsScreen() {
           <ThemedView style={styles.statCard}>
             <IconSymbol name="calendar" size={24} color={chartColor} />
             <ThemedText type="defaultSemiBold">记录月份</ThemedText>
-            <ThemedText type="title">{frequencyData.length}</ThemedText>
+            <ThemedText type="title">
+              {(() => {
+                const months = new Set();
+                dateRecords.forEach(record => {
+                  const date = new Date(record.date);
+                  months.add(`${date.getFullYear()}-${date.getMonth() + 1}`);
+                });
+                return months.size;
+              })()}
+            </ThemedText>
           </ThemedView>
           
           <ThemedView style={styles.statCard}>

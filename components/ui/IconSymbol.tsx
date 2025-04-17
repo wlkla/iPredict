@@ -14,6 +14,7 @@ const MAPPING = {
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
   // 已有图标映射
+  'pie_chart': 'pie_chart',
   'timer': 'timer',
   'calendar': 'event',
   'analytics': 'analytics',
