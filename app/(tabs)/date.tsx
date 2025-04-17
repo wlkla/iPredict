@@ -246,18 +246,19 @@ export default function DateScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <ParallaxScrollView
-        headerBackgroundColor={{ light: '#FFF5E6', dark: '#352E21' }}
-        headerImage={
-          <IconSymbol
-            size={120} // 减小图标尺寸
-            color={iconColor}
-            name="calendar"
-            style={styles.headerImage}
-          />
-        }
-        headerHeight={180} // 添加自定义参数来减少顶部高度
-      >
+          <ParallaxScrollView
+            headerBackgroundColor={{ light: '#FFF5E6', dark: '#352E21' }}
+            headerHeight={180}
+            headerImage={
+              <View style={styles.headerImageContainer}>
+                <IconSymbol
+                  size={130}
+                  color={iconColor}
+                  name="calendar"
+                  style={styles.headerImage}
+                />
+              </View>
+            }>
         <ThemedView style={styles.titleContainer}>
           <ThemedText type="title">记录日期</ThemedText>
         </ThemedView>
@@ -355,12 +356,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  headerImage: {
-    bottom: -30,
-    right: -20,
-    position: 'absolute',
-    opacity: 0.7,
-  },
+    headerImageContainer: {
+      position: 'absolute',
+      width: '100%',
+      height: '100%',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    headerImage: {
+      opacity: 0.7,
+    },
   titleContainer: {
     flexDirection: 'row',
     gap: 8,

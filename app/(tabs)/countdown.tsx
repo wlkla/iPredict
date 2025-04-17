@@ -337,18 +337,19 @@ export default function CountdownScreen() {
   );
   
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#F0F8FF', dark: '#1A2C38' }}
-      headerImage={
-        <Animated.View style={[styles.iconContainer, pulseAnimatedStyle]}>
-          <IconSymbol
-            size={140}
-            color={iconColor}
-            name="timer"
-            style={styles.headerImage}
-          />
-        </Animated.View>
-      }>
+          <ParallaxScrollView
+            headerBackgroundColor={{ light: '#F0F8FF', dark: '#1A2C38' }}
+            headerHeight={180}
+            headerImage={
+              <View style={styles.headerImageContainer}>
+                <IconSymbol
+                  size={130}
+                  color={iconColor}
+                  name="timer"
+                  style={styles.headerImage}
+                />
+              </View>
+            }>
       <ThemedView style={styles.titleContainer}>
         <ThemedText type="title">倒计时</ThemedText>
       </ThemedView>
@@ -430,9 +431,16 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  headerImage: {
-    opacity: 0.8,
-  },
+    headerImageContainer: {
+      position: 'absolute',
+      width: '100%',
+      height: '100%',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    headerImage: {
+      opacity: 0.7,
+    },
   container: {
     flex: 1,
   },
@@ -562,7 +570,7 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   cardValue: {
-    fontSize: 15,
+    fontSize: 13,
     fontWeight: '600',
   },
   buttonContainer: {

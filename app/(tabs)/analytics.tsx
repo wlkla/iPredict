@@ -563,13 +563,16 @@ export default function AnalyticsScreen() {
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#E6F0FF', dark: '#1A253C' }}
+      headerHeight={180}
       headerImage={
-        <IconSymbol
-          size={150}
-          color={iconColor}
-          name="analytics"
-          style={styles.headerImage}
-        />
+        <View style={styles.headerImageContainer}>
+          <IconSymbol
+            size={130}
+            color={iconColor}
+            name="analytics"
+            style={styles.headerImage}
+          />
+        </View>
       }>
       <ThemedView style={styles.titleContainer}>
         <ThemedText type="title">数据分析</ThemedText>
@@ -583,12 +586,16 @@ export default function AnalyticsScreen() {
 }
 
 const styles = StyleSheet.create({
-  headerImage: {
-    bottom: -60,
-    right: -40,
-    position: 'absolute',
-    opacity: 0.6,
-  },
+    headerImageContainer: {
+      position: 'absolute',
+      width: '100%',
+      height: '100%',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    headerImage: {
+      opacity: 0.7,
+    },
   titleContainer: {
     flexDirection: 'row',
     gap: 8,
