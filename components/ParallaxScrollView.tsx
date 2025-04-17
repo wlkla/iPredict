@@ -6,29 +6,54 @@ import Animated, {
   useAnimatedStyle,
   useScrollViewOffset,
 } from 'react-native-reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import { ThemedView } from '@/components/ThemedView';
 import { useBottomTabOverflow } from '@/components/ui/TabBarBackground';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { Gradients } from '@/constants/Gradients';
 
 const DEFAULT_HEADER_HEIGHT = 250;
 
 type Props = PropsWithChildren<{
   headerImage: ReactElement;
-  headerBackgroundColor: { dark: string; light: string };
-  headerHeight?: number; // 新增可选参数，允许自定义头部高度
+  headerBackgroundColor?: { dark: string; light: string };
+  headerGradient?: {
+    light: {
+      colors: string[];
+      start: { x: number; y: number };
+      end: { x: number; y: number };
+    };
+    dark: {
+      colors: string[];
+      start: { x: number; y: number };
+      end: { x: number; y: number };
+    };
+  };
+  headerHeight?: number;
 }>;
 
 export default function ParallaxScrollView({
   children,
   headerImage,
   headerBackgroundColor,
-  headerHeight = DEFAULT_HEADER_HEIGHT, // 默认值为250
+  headerGradient,
+  headerHeight = DEFAULT_HEADER_HEIGHT,
 }: Props) {
   const colorScheme = useColorScheme() ?? 'light';
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const scrollOffset = useScrollViewOffset(scrollRef);
   const bottom = useBottomTabOverflow();
+  
+  // 默认渐变配置
+  const defaultGradient = {
+    light: Gradients.primary,
+    dark: Gradients.primaryDark,
+  };
+  
+  // 使用传入的渐变或默认渐变
+  const gradient = headerGradient || defaultGradient;
+  
   const headerAnimatedStyle = useAnimatedStyle(() => {
     return {
       transform: [
@@ -57,11 +82,17 @@ export default function ParallaxScrollView({
           style={[
             styles.header,
             {
-              backgroundColor: headerBackgroundColor[colorScheme],
-              height: headerHeight, // 使用传入的高度或默认值
+              height: headerHeight,
             },
             headerAnimatedStyle,
           ]}>
+          {/* 使用渐变背景替代纯色背景 */}
+          <LinearGradient
+            colors={gradient[colorScheme].colors}
+            start={gradient[colorScheme].start}
+            end={gradient[colorScheme].end}
+            style={StyleSheet.absoluteFill}
+          />
           {headerImage}
         </Animated.View>
         <ThemedView style={styles.content}>{children}</ThemedView>
@@ -75,7 +106,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    // 不再在这里硬编码高度，而是在视图上直接使用
     overflow: 'hidden',
   },
   content: {

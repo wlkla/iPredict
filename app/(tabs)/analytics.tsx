@@ -561,19 +561,30 @@ export default function AnalyticsScreen() {
   };
 
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#E6F0FF', dark: '#1A253C' }}
-      headerHeight={180}
-      headerImage={
-        <View style={styles.headerImageContainer}>
-          <IconSymbol
-            size={130}
-            color={iconColor}
-            name="analytics"
-            style={styles.headerImage}
-          />
-        </View>
-      }>
+          <ParallaxScrollView
+            headerHeight={180}
+            headerGradient={{
+              light: {
+                colors: ['#4CAF50', '#8BC34A'],
+                start: { x: 0, y: 0 },
+                end: { x: 1, y: 1 }
+              },
+              dark: {
+                colors: ['#1B5E20', '#2E7D32'],
+                start: { x: 0, y: 0 },
+                end: { x: 1, y: 1 }
+              }
+            }}
+            headerImage={
+              <View style={styles.headerImageContainer}>
+                <IconSymbol
+                  size={130}
+                  color={iconColor}
+                  name="analytics"
+                  style={styles.headerImage}
+                />
+              </View>
+            }>
       <ThemedView style={styles.titleContainer}>
         <ThemedText type="title">数据分析</ThemedText>
       </ThemedView>

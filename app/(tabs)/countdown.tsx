@@ -338,8 +338,19 @@ export default function CountdownScreen() {
   
   return (
           <ParallaxScrollView
-            headerBackgroundColor={{ light: '#F0F8FF', dark: '#1A2C38' }}
             headerHeight={180}
+            headerGradient={{
+              light: {
+                colors: ['#00C9FF', '#92FE9D'],
+                start: { x: 0, y: 0 },
+                end: { x: 1, y: 1 }
+              },
+              dark: {
+                colors: ['#0077B6', '#48BFE3'],
+                start: { x: 0, y: 0 },
+                end: { x: 1, y: 1 }
+              }
+            }}
             headerImage={
               <View style={styles.headerImageContainer}>
                 <IconSymbol

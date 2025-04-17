@@ -1,3 +1,4 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { StyleSheet, TouchableOpacity, Alert, Platform, View } from 'react-native';
 import React, { useState, useEffect, useCallback } from 'react';
 import { Swipeable } from 'react-native-gesture-handler';
@@ -261,8 +262,19 @@ export default function DateScreen() {
   return (
     <ThemedView style={styles.container}>
           <ParallaxScrollView
-            headerBackgroundColor={{ light: '#FFF5E6', dark: '#352E21' }}
             headerHeight={180}
+            headerGradient={{
+              light: {
+                colors: ['#FFA726', '#FFCC80'],
+                start: { x: 0, y: 0 },
+                end: { x: 1, y: 1 }
+              },
+              dark: {
+                colors: ['#E65100', '#EF6C00'],
+                start: { x: 0, y: 0 },
+                end: { x: 1, y: 1 }
+              }
+            }}
             headerImage={
               <View style={styles.headerImageContainer}>
                 <IconSymbol
@@ -317,50 +329,65 @@ export default function DateScreen() {
       </ParallaxScrollView>
       
       {/* 添加按钮 */}
-      <Animated.View style={styles.addButtonContainer}>
-        <TouchableOpacity
-          style={[styles.addButton, { backgroundColor: tintColor }]}
-          onPress={showDatePicker}
-          activeOpacity={0.7}
-        >
-          <IconSymbol name="add" size={28} color="#FFFFFF" />
-        </TouchableOpacity>
-      </Animated.View>
+          <Animated.View style={styles.addButtonContainer}>
+            <TouchableOpacity
+              style={styles.addButton}
+              onPress={showDatePicker}
+              activeOpacity={0.7}
+            >
+              {/* 替换纯色背景为渐变色背景 */}
+              <LinearGradient
+                colors={colorScheme === 'dark' ? ['#E65100', '#EF6C00'] : ['#FFA726', '#FFCC80']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.buttonGradient}
+              >
+                <IconSymbol name="add" size={28} color="#FFFFFF" />
+              </LinearGradient>
+            </TouchableOpacity>
+          </Animated.View>
 
       {/* 日期选择器 - 移到视图层级最外层，确保显示在最上方 */}
-      {datePickerVisible && (
-        <ThemedView style={styles.datePickerOverlay}>
-          <ThemedView style={styles.datePickerContainer}>
-            <ThemedText type="subtitle" style={styles.datePickerTitle}>选择日期</ThemedText>
-            
-            <DateTimePicker
-              value={selectedDate}
-              mode="date"
-              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-              onChange={handleDateChange}
-              maximumDate={new Date()} // 限制只能选择今天及以前的日期
-              style={styles.datePicker}
-            />
-            
-            {Platform.OS === 'ios' && (
-              <ThemedView style={styles.buttonContainer}>
-                <TouchableOpacity
-                  style={[styles.cancelButton]}
-                  onPress={closeDatePicker}
-                >
-                  <ThemedText style={styles.cancelButtonText}>取消</ThemedText>
-                </TouchableOpacity>
+          {datePickerVisible && (
+            <ThemedView style={styles.datePickerOverlay}>
+              <ThemedView style={styles.datePickerContainer}>
+                <ThemedText type="subtitle" style={styles.datePickerTitle}>选择日期</ThemedText>
                 
-                <TouchableOpacity
-                  style={[styles.confirmButton, { backgroundColor: tintColor }]}
-                  onPress={confirmIOSDate}
-                >
-                  <ThemedText style={styles.confirmButtonText}>确定</ThemedText>
-                </TouchableOpacity>
+                <DateTimePicker
+                  value={selectedDate}
+                  mode="date"
+                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                  onChange={handleDateChange}
+                  maximumDate={new Date()} // 限制只能选择今天及以前的日期
+                  style={styles.datePicker}
+                />
+                
+                {Platform.OS === 'ios' && (
+                  <ThemedView style={styles.buttonContainer}>
+                    <TouchableOpacity
+                      style={[styles.cancelButton]}
+                      onPress={closeDatePicker}
+                    >
+                      <ThemedText style={styles.cancelButtonText}>取消</ThemedText>
+                    </TouchableOpacity>
+                    
+                    <TouchableOpacity
+                      style={[styles.confirmButton]}
+                      onPress={confirmIOSDate}
+                    >
+                      {/* 替换纯色为渐变色 */}
+                      <LinearGradient
+                        colors={colorScheme === 'dark' ? ['#E65100', '#EF6C00'] : ['#FFA726', '#FFCC80']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={StyleSheet.absoluteFill}
+                      />
+                      <ThemedText style={styles.confirmButtonText}>确定</ThemedText>
+                    </TouchableOpacity>
+                  </ThemedView>
+                )}
               </ThemedView>
-            )}
-          </ThemedView>
-        </ThemedView>
+            </ThemedView>
       )}
     </ThemedView>
   );
@@ -431,18 +458,25 @@ const styles = StyleSheet.create({
     right: 30,
     zIndex: 999, // 确保按钮容器在最上层
   },
-  addButton: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 6, // 增加阴影效果
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-  },
+    addButton: {
+      width: 60,
+      height: 60,
+      borderRadius: 30,
+      justifyContent: 'center',
+      alignItems: 'center',
+      elevation: 6,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
+      shadowRadius: 5,
+      overflow: 'hidden', // 确保渐变不超出圆形边界
+    },
+    buttonGradient: {
+      width: '100%',
+      height: '100%',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
   datePickerOverlay: {
     position: 'absolute',
     top: 0,
@@ -493,14 +527,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#F2F2F2',
   },
-  confirmButton: {
-    flex: 1,
-    marginLeft: 10,
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+    confirmButton: {
+      flex: 1,
+      marginLeft: 10,
+      paddingVertical: 12,
+      borderRadius: 8,
+      alignItems: 'center',
+      justifyContent: 'center',
+      overflow: 'hidden', // 确保渐变不超出按钮边界
+      position: 'relative', // 确保绝对定位的渐变背景正确显示
+    },
   cancelButtonText: {
     color: '#333333',
   },

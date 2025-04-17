@@ -31,7 +31,7 @@ export default function TabLayout() {
         tabBarBackground: TabBarBackground,
         tabBarStyle: Platform.select({
           ios: {
-            // Use a transparent background on iOS to show the blur effect
+            // 使用透明背景在iOS上显示模糊效果
             position: 'absolute',
           },
           default: {},
