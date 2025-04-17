@@ -22,12 +22,15 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
+import { updateAllCountdownNotifications } from '@/services/NotificationService';
 
 // 屏幕尺寸
 const { width, height } = Dimensions.get('window');
 
 // 本地存储键名（与 date.tsx 一致）
 const STORAGE_KEY = 'ipredict_date_records';
+// 通知设置存储键
+const NOTIFICATION_ENABLED_KEY = 'ipredict_notification_enabled';
 
 // 定义日期记录的接口
 interface DateRecord {
@@ -49,6 +52,7 @@ export default function CountdownScreen() {
   const [isOverdue, setIsOverdue] = useState<boolean>(false);
   const [daysPassed, setDaysPassed] = useState<number>(0);
   const [averageInterval, setAverageInterval] = useState<number>(30);
+  const [notificationsEnabled, setNotificationsEnabled] = useState<boolean>(false);
   
   // 动画值
   const progressValue = useSharedValue(0);
@@ -77,10 +81,21 @@ export default function CountdownScreen() {
   // 加载数据
   useFocusEffect(
     useCallback(() => {
+      loadNotificationSettings();
       loadRecordsFromStorage();
       return () => {};
     }, [])
   );
+  
+  // 加载通知设置
+  const loadNotificationSettings = async () => {
+    try {
+      const enabled = await AsyncStorage.getItem(NOTIFICATION_ENABLED_KEY);
+      setNotificationsEnabled(enabled === 'true');
+    } catch (error) {
+      console.error('加载通知设置失败:', error);
+    }
+  };
   
   // 从 AsyncStorage 加载数据
   const loadRecordsFromStorage = async () => {
@@ -180,6 +195,11 @@ export default function CountdownScreen() {
     
     // 淡入动画
     animatedOpacity.value = withTiming(1, { duration: 800 });
+    
+    // 如果通知已启用，更新通知
+    if (notificationsEnabled) {
+      updateAllCountdownNotifications(records);
+    }
   };
   
   // 添加今天的记录
@@ -222,6 +242,11 @@ export default function CountdownScreen() {
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedRecords));
       setDateRecords(updatedRecords);
       calculateCountdown(updatedRecords);
+      
+      // 如果通知已启用，更新通知
+      if (notificationsEnabled) {
+        await updateAllCountdownNotifications(updatedRecords);
+      }
     } catch (error) {
       console.error('Error saving record:', error);
     }
@@ -337,30 +362,30 @@ export default function CountdownScreen() {
   );
   
   return (
-          <ParallaxScrollView
-            headerHeight={180}
-            headerGradient={{
-              light: {
-                colors: ['#00C9FF', '#92FE9D'],
-                start: { x: 0, y: 0 },
-                end: { x: 1, y: 1 }
-              },
-              dark: {
-                colors: ['#0077B6', '#48BFE3'],
-                start: { x: 0, y: 0 },
-                end: { x: 1, y: 1 }
-              }
-            }}
-            headerImage={
-              <View style={styles.headerImageContainer}>
-                <IconSymbol
-                  size={130}
-                  color={iconColor}
-                  name="timer"
-                  style={styles.headerImage}
-                />
-              </View>
-            }>
+    <ParallaxScrollView
+      headerHeight={180}
+      headerGradient={{
+        light: {
+          colors: ['#00C9FF', '#92FE9D'],
+          start: { x: 0, y: 0 },
+          end: { x: 1, y: 1 }
+        },
+        dark: {
+          colors: ['#0077B6', '#48BFE3'],
+          start: { x: 0, y: 0 },
+          end: { x: 1, y: 1 }
+        }
+      }}
+      headerImage={
+        <View style={styles.headerImageContainer}>
+          <IconSymbol
+            size={130}
+            color={iconColor}
+            name="timer"
+            style={styles.headerImage}
+          />
+        </View>
+      }>
       <ThemedView style={styles.titleContainer}>
         <ThemedText type="title">倒计时</ThemedText>
       </ThemedView>
@@ -411,6 +436,16 @@ export default function CountdownScreen() {
           </View>
         )}
         
+        {/* 通知状态提示 */}
+        {dateRecords.length > 0 && notificationsEnabled && (
+          <ThemedView style={styles.notificationInfo}>
+            <IconSymbol name="notifications" size={20} color={tintColor} />
+            <ThemedText style={styles.notificationText}>
+              已设置提醒，将在预期日期前一天和当天早上8点通知您
+            </ThemedText>
+          </ThemedView>
+        )}
+        
         {/* 添加按钮 */}
         <Animated.View style={[styles.buttonContainer, buttonAnimatedStyle]}>
           <TouchableOpacity
@@ -442,16 +477,16 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-    headerImageContainer: {
-      position: 'absolute',
-      width: '100%',
-      height: '100%',
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    headerImage: {
-      opacity: 0.7,
-    },
+  headerImageContainer: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerImage: {
+    opacity: 0.7,
+  },
   container: {
     flex: 1,
   },
@@ -583,6 +618,21 @@ const styles = StyleSheet.create({
   cardValue: {
     fontSize: 13,
     fontWeight: '600',
+  },
+  notificationInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+    backgroundColor: 'rgba(0, 201, 255, 0.1)',
+    borderRadius: 10,
+    marginBottom: 20,
+    width: '100%',
+    gap: 10,
+  },
+  notificationText: {
+    fontSize: 12,
+    flex: 1,
+    opacity: 0.8,
   },
   buttonContainer: {
     marginTop: 20,

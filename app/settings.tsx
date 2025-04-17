@@ -1,4 +1,4 @@
-import { StyleSheet, Switch, ScrollView, TouchableOpacity, Alert, Platform, View } from 'react-native';
+import { StyleSheet, Switch, ScrollView, TouchableOpacity, Alert, Platform, View, Dimensions } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { Stack } from 'expo-router';
 import * as Haptics from 'expo-haptics';
@@ -6,6 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as FileSystem from 'expo-file-system';
 import * as DocumentPicker from 'expo-document-picker';
 import * as Sharing from 'expo-sharing';
+import { initNotifications, updateAllCountdownNotifications } from '@/services/NotificationService';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -16,7 +17,8 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 
 // 本地存储键名（与 date.tsx 一致）
 const STORAGE_KEY = 'ipredict_date_records';
-
+// 通知设置存储键
+const NOTIFICATION_ENABLED_KEY = 'ipredict_notification_enabled';
 // 加密密钥（实际应用中应该使用更安全的方式存储）
 const ENCRYPTION_KEY = 'ipredict_secure_key_2025';
 
@@ -26,6 +28,9 @@ export default function SettingsScreen() {
   
   const iconColor = Colors[colorScheme].icon;
   const tintColor = Colors[colorScheme].tint;
+  
+  // 获取窗口高度以确保内容区域能填满屏幕
+  const windowHeight = Dimensions.get('window').height;
   
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [soundEnabled, setSoundEnabled] = useState(true);
@@ -37,11 +42,67 @@ export default function SettingsScreen() {
     setDarkModeEnabled(colorScheme === 'dark');
   }, [colorScheme]);
   
+  // 加载通知设置
+  useEffect(() => {
+    const loadNotificationSettings = async () => {
+      try {
+        const notificationEnabled = await AsyncStorage.getItem(NOTIFICATION_ENABLED_KEY);
+        setNotificationsEnabled(notificationEnabled === 'true');
+      } catch (error) {
+        console.error('加载通知设置失败:', error);
+      }
+    };
+    
+    loadNotificationSettings();
+  }, []);
+  
   const toggleSwitch = (setter: React.Dispatch<React.SetStateAction<boolean>>, value: boolean) => {
     if (Platform.OS === 'ios' && vibrationEnabled) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
     setter(value);
+  };
+  
+  // 切换通知开关
+  const toggleNotifications = async (value: boolean) => {
+    if (Platform.OS === 'ios' && vibrationEnabled) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    
+    try {
+      // 保存通知设置
+      await AsyncStorage.setItem(NOTIFICATION_ENABLED_KEY, value.toString());
+      setNotificationsEnabled(value);
+      
+      if (value) {
+        // 当开启通知时，请求权限并设置通知
+        const hasPermission = await initNotifications();
+        
+        if (!hasPermission) {
+          Alert.alert(
+            '通知权限',
+            '请在设备设置中允许iPredict发送通知，以便接收倒计时提醒。',
+            [{ text: '确定', style: 'default' }]
+          );
+          return;
+        }
+        
+        // 加载现有记录并更新通知
+        const storedRecords = await AsyncStorage.getItem(STORAGE_KEY);
+        if (storedRecords) {
+          const parsedRecords = JSON.parse(storedRecords).map((record: any) => ({
+            ...record,
+            date: new Date(record.date)
+          }));
+          
+          // 更新所有通知
+          await updateAllCountdownNotifications(parsedRecords);
+        }
+      }
+    } catch (error) {
+      console.error('切换通知设置失败:', error);
+      Alert.alert('错误', '无法更新通知设置');
+    }
   };
   
   // 切换深色模式
@@ -283,7 +344,7 @@ export default function SettingsScreen() {
           },
         }}
       />
-      <ScrollView>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { minHeight: windowHeight - 80 }]}>
         <ThemedView style={styles.container}>
           <ThemedView style={styles.section}>
             <ThemedText type="subtitle">应用设置</ThemedText>
@@ -297,7 +358,7 @@ export default function SettingsScreen() {
                 trackColor={{ false: '#767577', true: tintColor }}
                 thumbColor="#f4f3f4"
                 ios_backgroundColor="#3e3e3e"
-                onValueChange={(value) => toggleSwitch(setNotificationsEnabled, value)}
+                onValueChange={toggleNotifications}
                 value={notificationsEnabled}
               />
             </ThemedView>
@@ -357,6 +418,8 @@ export default function SettingsScreen() {
             </TouchableOpacity>
           </ThemedView>
           
+          {/* 添加弹性空间，确保内容可以填满屏幕 */}
+          <View style={styles.flexSpacer} />
           
           <ThemedText style={styles.version}>版本 1.0.0</ThemedText>
         </ThemedView>
@@ -366,9 +429,13 @@ export default function SettingsScreen() {
 }
 
 const styles = StyleSheet.create({
+  scrollContent: {
+    flexGrow: 1, // 确保内容能够填满整个ScrollView
+  },
   container: {
     flex: 1,
     padding: 16,
+    justifyContent: 'space-between', // 使内容分布在容器的两端
   },
   section: {
     marginBottom: 24,
@@ -409,6 +476,10 @@ const styles = StyleSheet.create({
   },
   dangerText: {
     color: '#FF3B30',
+  },
+  flexSpacer: {
+    flex: 1, // 弹性空间，会自动填充剩余区域
+    minHeight: 20, // 确保即使在设置项较多的情况下也有一些间距
   },
   version: {
     textAlign: 'center',
