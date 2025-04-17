@@ -1,4 +1,3 @@
-
 import { ScrollView } from 'react-native';
 import { StyleSheet, TouchableOpacity, Dimensions, View } from 'react-native';
 import React, { useState, useEffect, useCallback } from 'react';
@@ -7,6 +6,7 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
   withSequence,
+  withRepeat,
   Easing,
   SharedValue,
   interpolateColor,
@@ -21,6 +21,7 @@ import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import ParallaxScrollView from '@/components/ParallaxScrollView';
 
 // 屏幕尺寸
 const { width, height } = Dimensions.get('window');
@@ -38,6 +39,7 @@ interface DateRecord {
 export default function CountdownScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const tintColor = Colors[colorScheme].tint;
+  const iconColor = Colors[colorScheme].icon;
   
   // 状态管理
   const [dateRecords, setDateRecords] = useState<DateRecord[]>([]);
@@ -52,6 +54,25 @@ export default function CountdownScreen() {
   const progressValue = useSharedValue(0);
   const animatedOpacity = useSharedValue(0);
   const buttonScale = useSharedValue(1);
+  const pulseAnimation = useSharedValue(1);
+  
+  // 脉冲动画效果
+  useEffect(() => {
+    pulseAnimation.value = withRepeat(
+      withSequence(
+        withTiming(1.2, { duration: 800 }),
+        withTiming(1, { duration: 800 })
+      ),
+      -1, // 无限重复
+      true // 反向
+    );
+  }, []);
+
+  const pulseAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: pulseAnimation.value }],
+    };
+  });
   
   // 加载数据
   useFocusEffect(
@@ -138,7 +159,7 @@ export default function CountdownScreen() {
     // 是否超时
     const overdue = diffDays < 0;
     
-    // 距离上次的天数
+    // 距离上次的天数 - 计算从最后一次记录到今天的天数
     const passedTime = today.getTime() - last.getTime();
     const passed = Math.ceil(passedTime / (1000 * 60 * 60 * 24));
     
@@ -147,7 +168,7 @@ export default function CountdownScreen() {
     setExpectedDate(expected);
     setDaysLeft(Math.abs(diffDays));
     setIsOverdue(overdue);
-    setDaysPassed(passed);
+    setDaysPassed(passed);  // 这个值是距离上次记录的天数
     setAverageInterval(avgInterval);
     
     // 更新进度动画
@@ -235,9 +256,8 @@ export default function CountdownScreen() {
   };
   
   // 渲染进度圆环
-  const ProgressCircle = ({ progress, days, isOverdue }: {
+  const ProgressCircle = ({ progress, isOverdue }: {
     progress: SharedValue<number>,
-    days: number,
     isOverdue: boolean
   }) => {
     const circleSize = width * 0.6;
@@ -294,10 +314,13 @@ export default function CountdownScreen() {
           </Animated.View>
         </View>
         
-        {/* 数字显示 */}
+        {/* 数字显示 - 根据是否超时显示不同的数字 */}
         <View style={styles.daysTextContainer}>
-          <ThemedText style={styles.daysNumber}>{days}</ThemedText>
-          <ThemedText style={styles.daysUnit}>{isOverdue ? '天已过' : '天'}</ThemedText>
+          <ThemedText style={[styles.daysNumber, { lineHeight: 60 }]}>
+            {isOverdue ? daysPassed : daysLeft}
+          </ThemedText>
+          <ThemedText style={styles.daysUnit}>天
+          </ThemedText>
         </View>
       </View>
     );
@@ -314,81 +337,102 @@ export default function CountdownScreen() {
   );
   
   return (
-    <ThemedView style={styles.container}>
-      {/* 主内容 */}
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <Animated.View style={[styles.content, containerAnimatedStyle]}>
-          {/* 状态文本 */}
-          <ThemedText style={styles.statusText}>
-            {dateRecords.length === 0
-              ? '开始记录您的重要日期'
-              : (isOverdue ? '已超出预期时间' : '距离预期时间还有')}
-          </ThemedText>
-          
-          {/* 进度圆环 */}
-          {dateRecords.length === 0 ? (
-            <View style={styles.emptyState}>
-              <IconSymbol name="calendar" size={80} color={tintColor} />
-              <ThemedText style={styles.emptyText}>
-                点击下方按钮添加您的第一条记录
-              </ThemedText>
-            </View>
-          ) : (
-            <ProgressCircle
-              progress={progressValue}
-              days={daysLeft}
-              isOverdue={isOverdue}
-            />
-          )}
-          
-          {/* 信息卡片 */}
-          {dateRecords.length > 0 && (
-            <View style={styles.infoGrid}>
-              <InfoCard
-                title="上次记录"
-                value={formatDate(lastDate)}
-              />
-              <InfoCard
-                title="预期下次"
-                value={formatDate(expectedDate)}
-              />
-              <InfoCard
-                title="已经过去"
-                value={`${daysPassed}天`}
-              />
-              <InfoCard
-                title="平均间隔"
-                value={`${averageInterval}天`}
-              />
-            </View>
-          )}
-          
-          {/* 添加按钮 */}
-          <Animated.View style={[styles.buttonContainer, buttonAnimatedStyle]}>
-            <TouchableOpacity
-              style={styles.addButton}
-              activeOpacity={0.8}
-              onPress={addTodayRecord}
-            >
-              <LinearGradient
-                colors={isOverdue ? ['#FF5F6D', '#FF9966'] : ['#00C9FF', '#92FE9D']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.buttonGradient}
-              >
-                <ThemedText style={styles.buttonText}>
-                  {dateRecords.length === 0 ? '开始记录' : '添加今天'}
-                </ThemedText>
-              </LinearGradient>
-            </TouchableOpacity>
-          </Animated.View>
+    <ParallaxScrollView
+      headerBackgroundColor={{ light: '#F0F8FF', dark: '#1A2C38' }}
+      headerImage={
+        <Animated.View style={[styles.iconContainer, pulseAnimatedStyle]}>
+          <IconSymbol
+            size={140}
+            color={iconColor}
+            name="timer"
+            style={styles.headerImage}
+          />
         </Animated.View>
-      </ScrollView>
-    </ThemedView>
+      }>
+      <ThemedView style={styles.titleContainer}>
+        <ThemedText type="title">倒计时</ThemedText>
+      </ThemedView>
+
+      {/* 主内容 */}
+      <Animated.View style={[styles.content, containerAnimatedStyle]}>
+        {/* 状态文本 */}
+        <ThemedText style={styles.statusText}>
+          {dateRecords.length === 0
+            ? '开始记录您的重要日期'
+            : (isOverdue ? '已超出预期时间' : '距离预期时间还有')}
+        </ThemedText>
+        
+        {/* 进度圆环或空状态 */}
+        {dateRecords.length === 0 ? (
+          <View style={styles.emptyState}>
+            <IconSymbol name="calendar" size={80} color={tintColor} />
+            <ThemedText style={styles.emptyText}>
+              点击下方按钮添加您的第一条记录
+            </ThemedText>
+          </View>
+        ) : (
+          <ProgressCircle
+            progress={progressValue}
+            isOverdue={isOverdue}
+          />
+        )}
+        
+        {/* 信息卡片 */}
+        {dateRecords.length > 0 && (
+          <View style={styles.infoGrid}>
+            <InfoCard
+              title="上次记录"
+              value={formatDate(lastDate)}
+            />
+            <InfoCard
+              title="预期下次"
+              value={formatDate(expectedDate)}
+            />
+            <InfoCard
+              title="已经过去"
+              value={`${daysPassed}天`}
+            />
+            <InfoCard
+              title="平均间隔"
+              value={`${averageInterval}天`}
+            />
+          </View>
+        )}
+        
+        {/* 添加按钮 */}
+        <Animated.View style={[styles.buttonContainer, buttonAnimatedStyle]}>
+          <TouchableOpacity
+            style={styles.addButton}
+            activeOpacity={0.8}
+            onPress={addTodayRecord}
+          >
+            <LinearGradient
+              colors={isOverdue ? ['#FF5F6D', '#FF9966'] : ['#00C9FF', '#92FE9D']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.buttonGradient}
+            >
+              <ThemedText style={styles.buttonText}>
+                {dateRecords.length === 0 ? '开始记录' : '添加今天'}
+              </ThemedText>
+            </LinearGradient>
+          </TouchableOpacity>
+        </Animated.View>
+      </Animated.View>
+    </ParallaxScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  iconContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    height: '100%',
+  },
+  headerImage: {
+    opacity: 0.8,
+  },
   container: {
     flex: 1,
   },
@@ -436,6 +480,21 @@ const styles = StyleSheet.create({
     opacity: 0.7,
     maxWidth: 250,
   },
+  titleContainer: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 20,
+  },
+  countdownContainer: {
+    gap: 16,
+  },
+  eventCard: {
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#DDDDDD',
+    marginBottom: 10,
+  },
   circleContainer: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -460,15 +519,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
+    position: 'relative',
+    zIndex: 10,
   },
   daysNumber: {
     fontSize: 50,
     fontWeight: 'bold',
+    textAlign: 'center',
+    includeFontPadding: false, // 解决数字显示不完整问题
+    padding: 0,
+    margin: 0,
+    height: 60, // 确保文字高度固定
   },
   daysUnit: {
     fontSize: 20,
     fontWeight: '500',
     alignSelf: 'flex-end',
+    marginBottom: 10,
   },
   infoGrid: {
     flexDirection: 'row',
