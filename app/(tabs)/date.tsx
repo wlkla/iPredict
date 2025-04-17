@@ -1,5 +1,5 @@
 import { StyleSheet, TouchableOpacity, Alert, Platform, View } from 'react-native';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Swipeable } from 'react-native-gesture-handler';
 import Animated, {
   useSharedValue,
@@ -12,6 +12,7 @@ import Animated, {
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { SvgXml } from 'react-native-svg';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native'; // 导入useFocusEffect
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -70,10 +71,18 @@ export default function DateScreen() {
     <path d="M320 350 L350 380 L380 350" stroke="#0a7ea4" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
   </svg>`;
   
-  // 从 AsyncStorage 加载数据
-  useEffect(() => {
-    loadRecordsFromStorage();
-  }, []);
+  // 使用 useFocusEffect 替代 useEffect，确保每次页面获得焦点时都重新加载数据
+  useFocusEffect(
+    useCallback(() => {
+      // 当页面获得焦点时调用
+      loadRecordsFromStorage();
+      
+      // 返回的函数在页面失去焦点时调用（清理函数）
+      return () => {
+        // 这里可以进行一些清理操作（如果需要）
+      };
+    }, []) // 空依赖数组意味着只有在页面获得/失去焦点时才会重新执行
+  );
   
   // 加载本地存储数据
   const loadRecordsFromStorage = async () => {
@@ -87,7 +96,12 @@ export default function DateScreen() {
           date: new Date(record.date)
         }));
         
+        // 按日期降序排序，直接使用 date 对象的 getTime 方法
+        parsedRecords.sort((a, b) => b.date.getTime() - a.date.getTime());
+        
         setDateRecords(parsedRecords);
+      } else {
+        setDateRecords([]);
       }
     } catch (error) {
       console.error('Error loading records from storage:', error);

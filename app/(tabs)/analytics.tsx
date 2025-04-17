@@ -486,7 +486,7 @@ export default function AnalyticsScreen() {
             style={styles.noDataIcon}
           />
           <ThemedText style={styles.noDataText}>
-            暂无数据可供分析，请先在"日期"标签页中添加记录。
+            暂无数据可供分析，请先添加数据
           </ThemedText>
         </ThemedView>
       );
