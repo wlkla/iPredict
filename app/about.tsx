@@ -55,7 +55,7 @@ export default function AboutScreen() {
           <ThemedView style={styles.logoContainer}>
             <Animated.View style={animatedStyle}>
               <Image
-                source={require('@/assets/images/icon.png')}
+                source={require('@/assets/images/react-logo.png')}
                 style={styles.logo}
               />
             </Animated.View>
@@ -67,7 +67,7 @@ export default function AboutScreen() {
             <ThemedText type="subtitle">应用介绍</ThemedText>
             <ThemedText style={styles.description}>
               iPredict 是一款集日程管理、时间预测和数据分析于一体的综合应用。
-              通过智能算法，帮助用户更好地规划时间、跟踪目标完成情况，并提供
+              通过智能分析，帮助用户更好地规划时间、跟踪目标完成情况，并提供
               直观的数据分析，让您的时间管理更高效。
             </ThemedText>
           </ThemedView>
@@ -79,7 +79,7 @@ export default function AboutScreen() {
               <IconSymbol name="timer" size={24} color={tintColor} />
               <ThemedView style={styles.featureTextContainer}>
                 <ThemedText type="defaultSemiBold">智能倒计时</ThemedText>
-                <ThemedText>跟踪重要事件和任务的剩余时间</ThemedText>
+                <ThemedText>跟踪重要事件和事件的剩余时间</ThemedText>
               </ThemedView>
             </ThemedView>
             
@@ -87,7 +87,7 @@ export default function AboutScreen() {
               <IconSymbol name="calendar" size={24} color={tintColor} />
               <ThemedView style={styles.featureTextContainer}>
                 <ThemedText type="defaultSemiBold">日期管理</ThemedText>
-                <ThemedText>直观的日历视图，让您一目了然地查看安排</ThemedText>
+                <ThemedText>直观的列表，让您一目了然地查看历史记录</ThemedText>
               </ThemedView>
             </ThemedView>
             
@@ -95,7 +95,7 @@ export default function AboutScreen() {
               <IconSymbol name="analytics" size={24} color={tintColor} />
               <ThemedView style={styles.featureTextContainer}>
                 <ThemedText type="defaultSemiBold">数据分析</ThemedText>
-                <ThemedText>详细的统计和图表，帮助您了解时间使用情况</ThemedText>
+                <ThemedText>详细的统计和图表，帮助您了解事件周期情况</ThemedText>
               </ThemedView>
             </ThemedView>
             
@@ -103,7 +103,7 @@ export default function AboutScreen() {
               <IconSymbol name="notifications" size={24} color={tintColor} />
               <ThemedView style={styles.featureTextContainer}>
                 <ThemedText type="defaultSemiBold">智能提醒</ThemedText>
-                <ThemedText>根据您的习惯自动发送重要事件提醒</ThemedText>
+                <ThemedText>根据事件倒计时自动发送提醒</ThemedText>
               </ThemedView>
             </ThemedView>
           </ThemedView>
@@ -113,15 +113,8 @@ export default function AboutScreen() {
             
             <ThemedView style={styles.contactItem}>
               <IconSymbol name="email" size={24} color={tintColor} />
-              <ExternalLink href="mailto:support@ipredict.app" style={styles.link}>
-                <ThemedText type="link">support@ipredict.app</ThemedText>
-              </ExternalLink>
-            </ThemedView>
-            
-            <ThemedView style={styles.contactItem}>
-              <IconSymbol name="public" size={24} color={tintColor} />
-              <ExternalLink href="https://www.ipredict.app" style={styles.link}>
-                <ThemedText type="link">www.ipredict.app</ThemedText>
+              <ExternalLink href="mailto:onebuaaer@gmail.com" style={styles.link}>
+                <ThemedText type="link">onebuaaer@gmail.com</ThemedText>
               </ExternalLink>
             </ThemedView>
           </ThemedView>
@@ -130,15 +123,12 @@ export default function AboutScreen() {
             <ThemedText type="subtitle">隐私政策</ThemedText>
             <ThemedText style={styles.privacyText}>
               我们尊重您的隐私。iPredict 应用收集的所有数据仅用于提供和改进服务。
-              我们不会与第三方共享您的个人信息。点击下方查看完整的隐私政策。
+              我们不会与第三方共享您的个人信息。
             </ThemedText>
-            <ExternalLink href="https://www.ipredict.app/privacy" style={styles.privacyLink}>
-              <ThemedText type="link">查看隐私政策</ThemedText>
-            </ExternalLink>
           </ThemedView>
           
           <ThemedText style={styles.copyright}>
-            © 2024 iPredict. 保留所有权利。
+            © 2025 iPredict. 保留所有权利。
           </ThemedText>
         </ThemedView>
       </ScrollView>

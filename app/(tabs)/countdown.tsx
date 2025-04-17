@@ -1,3 +1,5 @@
+
+import { ScrollView } from 'react-native';
 import { StyleSheet, TouchableOpacity, Dimensions, View } from 'react-native';
 import React, { useState, useEffect, useCallback } from 'react';
 import Animated, {
@@ -313,74 +315,75 @@ export default function CountdownScreen() {
   
   return (
     <ThemedView style={styles.container}>
-      
       {/* 主内容 */}
-      <Animated.View style={[styles.content, containerAnimatedStyle]}>
-        {/* 状态文本 */}
-        <ThemedText style={styles.statusText}>
-          {dateRecords.length === 0
-            ? '开始记录您的重要日期'
-            : (isOverdue ? '已超出预期时间' : '距离预期时间还有')}
-        </ThemedText>
-        
-        {/* 进度圆环 */}
-        {dateRecords.length === 0 ? (
-          <View style={styles.emptyState}>
-            <IconSymbol name="calendar" size={80} color={tintColor} />
-            <ThemedText style={styles.emptyText}>
-              点击下方按钮添加您的第一条记录
-            </ThemedText>
-          </View>
-        ) : (
-          <ProgressCircle
-            progress={progressValue}
-            days={daysLeft}
-            isOverdue={isOverdue}
-          />
-        )}
-        
-        {/* 信息卡片 */}
-        {dateRecords.length > 0 && (
-          <View style={styles.infoGrid}>
-            <InfoCard
-              title="上次记录"
-              value={formatDate(lastDate)}
-            />
-            <InfoCard
-              title="预期下次"
-              value={formatDate(expectedDate)}
-            />
-            <InfoCard
-              title="已经过去"
-              value={`${daysPassed}天`}
-            />
-            <InfoCard
-              title="平均间隔"
-              value={`${averageInterval}天`}
-            />
-          </View>
-        )}
-        
-        {/* 添加按钮 */}
-        <Animated.View style={[styles.buttonContainer, buttonAnimatedStyle]}>
-          <TouchableOpacity
-            style={styles.addButton}
-            activeOpacity={0.8}
-            onPress={addTodayRecord}
-          >
-            <LinearGradient
-              colors={isOverdue ? ['#FF5F6D', '#FF9966'] : ['#00C9FF', '#92FE9D']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.buttonGradient}
-            >
-              <ThemedText style={styles.buttonText}>
-                {dateRecords.length === 0 ? '开始记录' : '添加今天'}
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <Animated.View style={[styles.content, containerAnimatedStyle]}>
+          {/* 状态文本 */}
+          <ThemedText style={styles.statusText}>
+            {dateRecords.length === 0
+              ? '开始记录您的重要日期'
+              : (isOverdue ? '已超出预期时间' : '距离预期时间还有')}
+          </ThemedText>
+          
+          {/* 进度圆环 */}
+          {dateRecords.length === 0 ? (
+            <View style={styles.emptyState}>
+              <IconSymbol name="calendar" size={80} color={tintColor} />
+              <ThemedText style={styles.emptyText}>
+                点击下方按钮添加您的第一条记录
               </ThemedText>
-            </LinearGradient>
-          </TouchableOpacity>
+            </View>
+          ) : (
+            <ProgressCircle
+              progress={progressValue}
+              days={daysLeft}
+              isOverdue={isOverdue}
+            />
+          )}
+          
+          {/* 信息卡片 */}
+          {dateRecords.length > 0 && (
+            <View style={styles.infoGrid}>
+              <InfoCard
+                title="上次记录"
+                value={formatDate(lastDate)}
+              />
+              <InfoCard
+                title="预期下次"
+                value={formatDate(expectedDate)}
+              />
+              <InfoCard
+                title="已经过去"
+                value={`${daysPassed}天`}
+              />
+              <InfoCard
+                title="平均间隔"
+                value={`${averageInterval}天`}
+              />
+            </View>
+          )}
+          
+          {/* 添加按钮 */}
+          <Animated.View style={[styles.buttonContainer, buttonAnimatedStyle]}>
+            <TouchableOpacity
+              style={styles.addButton}
+              activeOpacity={0.8}
+              onPress={addTodayRecord}
+            >
+              <LinearGradient
+                colors={isOverdue ? ['#FF5F6D', '#FF9966'] : ['#00C9FF', '#92FE9D']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.buttonGradient}
+              >
+                <ThemedText style={styles.buttonText}>
+                  {dateRecords.length === 0 ? '开始记录' : '添加今天'}
+                </ThemedText>
+              </LinearGradient>
+            </TouchableOpacity>
+          </Animated.View>
         </Animated.View>
-      </Animated.View>
+      </ScrollView>
     </ThemedView>
   );
 }
@@ -405,19 +408,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: 40,
+    paddingTop: 0,
     paddingBottom: 30,
   },
   statusText: {
     fontSize: 20,
     fontWeight: '500',
-    marginBottom: 40,
     textAlign: 'center',
   },
   emptyState: {
     alignItems: 'center',
     justifyContent: 'center',
     marginVertical: 40,
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 40,
+    paddingBottom: 30,
   },
   emptyText: {
     fontSize: 16,
@@ -452,29 +462,28 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   daysNumber: {
-    fontSize: 80,
+    fontSize: 50,
     fontWeight: 'bold',
-    marginRight: 5,
   },
   daysUnit: {
     fontSize: 20,
     fontWeight: '500',
     alignSelf: 'flex-end',
-    marginBottom: 15,
   },
   infoGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
     width: '100%',
-    marginTop: 20,
   },
   infoCard: {
-    width: '48%',
+    width: '49%',
     height: 90,
     marginBottom: 15,
     borderRadius: 16,
     overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.1)',
   },
   cardBlur: {
     flex: 1,
@@ -486,12 +495,13 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   cardValue: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
   },
   buttonContainer: {
     marginTop: 20,
     width: '100%',
+    paddingBottom: 30,
   },
   addButton: {
     height: 56,

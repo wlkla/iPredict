@@ -518,13 +518,13 @@ export default function AnalyticsScreen() {
           <ThemedView style={styles.statCard}>
             <IconSymbol name="check" size={24} color={chartColor} />
             <ThemedText type="defaultSemiBold">总记录</ThemedText>
-            <ThemedText type="title">{dateRecords.length}</ThemedText>
+            <ThemedText type="subtitle">{dateRecords.length}条</ThemedText>
           </ThemedView>
           
           <ThemedView style={styles.statCard}>
             <IconSymbol name="calendar" size={24} color={chartColor} />
             <ThemedText type="defaultSemiBold">记录月份</ThemedText>
-            <ThemedText type="title">
+            <ThemedText type="subtitle">
               {(() => {
                 const months = new Set();
                 dateRecords.forEach(record => {
@@ -539,7 +539,7 @@ export default function AnalyticsScreen() {
           <ThemedView style={styles.statCard}>
             <IconSymbol name="timelapse" size={24} color={chartColor} />
             <ThemedText type="defaultSemiBold">平均间隔</ThemedText>
-            <ThemedText type="title">
+            <ThemedText type="subtitle">
               {intervalData.length > 0
                 ? intervalData.reduce((sum, val) => sum + val, 0) / intervalData.length
                 : 0}天
@@ -549,7 +549,7 @@ export default function AnalyticsScreen() {
           <ThemedView style={styles.statCard}>
             <IconSymbol name="flag" size={24} color={chartColor} />
             <ThemedText type="defaultSemiBold">最近记录</ThemedText>
-            <ThemedText type="title">
+            <ThemedText type="subtitle">
               {dateRecords.length > 0
                 ? `${new Date(dateRecords[0].date).getMonth() + 1}月${new Date(dateRecords[0].date).getDate()}日`
                 : '-'}
