@@ -28,6 +28,7 @@ const MAPPING = {
   'vibration': 'vibration',
   'cleaning_services': 'cleaning_services',
   'cloud_download': 'cloud_download',
+  'cloud_up': 'cloud_up',
   'delete': 'delete',
   'star': 'star',
   'feedback': 'feedback',

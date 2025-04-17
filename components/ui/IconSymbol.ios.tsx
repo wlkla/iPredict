@@ -18,6 +18,7 @@ const SF_SYMBOLS_MAPPING = {
   'vibration': 'waveform.path',
   'cleaning_services': 'trash.fill',
   'cloud_download': 'arrow.down.circle.fill',
+  'cloud_up': 'arrow.up.circle.fill',
   'delete': 'trash.slash.fill',
   'star': 'star.fill',
   'feedback': 'text.bubble.fill',
