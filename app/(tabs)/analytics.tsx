@@ -541,7 +541,7 @@ export default function AnalyticsScreen() {
             <ThemedText type="defaultSemiBold">平均间隔</ThemedText>
             <ThemedText type="subtitle">
               {intervalData.length > 0
-                ? intervalData.reduce((sum, val) => sum + val, 0) / intervalData.length
+                ? Math.round(intervalData.reduce((sum, val) => sum + val, 0) / intervalData.length)
                 : 0}天
             </ThemedText>
           </ThemedView>
