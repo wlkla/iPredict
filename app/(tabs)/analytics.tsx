@@ -54,7 +54,6 @@ export default function AnalyticsScreen() {
   // 使用 useFocusEffect 来确保每次页面获取焦点时重新加载数据
   useFocusEffect(
     useCallback(() => {
-      console.log('Analytics screen focused, reloading data...');
       loadRecordsFromStorage();
       return () => {};
     }, [])
@@ -63,15 +62,12 @@ export default function AnalyticsScreen() {
   // 数据处理
   useEffect(() => {
     if (dateRecords.length > 0) {
-      console.log('Processing date records, count:', dateRecords.length);
-      
       // 计算时间间隔数据
       const intervals = dateRecords
         .filter(record => record.daysSinceLastRecord !== null)
         .map(record => record.daysSinceLastRecord as number);
       
       setIntervalData(intervals);
-      console.log('Interval data:', intervals);
       
       // 计算间隔频率数据
       const frequencyMap = new Map<number, number>();
@@ -88,11 +84,9 @@ export default function AnalyticsScreen() {
       const frequencyArray = Array.from(frequencyMap, ([interval, count]) => ({ interval, count }));
       frequencyArray.sort((a, b) => a.interval - b.interval);
       
-      console.log('Interval frequency data:', frequencyArray);
       setIntervalFrequencyData(frequencyArray);
       setHasData(intervals.length > 0);
     } else {
-      console.log('No date records to process');
       setHasData(false);
     }
   }, [dateRecords]);
@@ -101,7 +95,6 @@ export default function AnalyticsScreen() {
   const loadRecordsFromStorage = async () => {
     try {
       const storedRecords = await AsyncStorage.getItem(STORAGE_KEY);
-      console.log('Retrieved records from storage:', storedRecords ? 'Data exists' : 'No data');
       
       if (storedRecords) {
         // 解析存储的 JSON 字符串，并转换日期字符串为 Date 对象
@@ -110,15 +103,11 @@ export default function AnalyticsScreen() {
           date: new Date(record.date)
         }));
         
-        console.log('Parsed records count:', parsedRecords.length);
-        
         // 按日期降序排序，直接使用 date 对象的 getTime 方法
         parsedRecords.sort((a, b) => b.date.getTime() - a.date.getTime());
         
         setDateRecords(parsedRecords);
-        console.log('Set date records:', parsedRecords.length);
       } else {
-        console.log('No records found in storage');
         setDateRecords([]);
       }
     } catch (error) {
@@ -126,111 +115,133 @@ export default function AnalyticsScreen() {
     }
   };
   
-  // 折线图组件
-  const LineChart = () => {
-    if (intervalData.length === 0) return null;
-    
-    const chartWidth = width - 64; // 减去内边距
-    const chartHeight = 200;
-    const padding = 30;
-    const graphWidth = chartWidth - padding * 2;
-    const graphHeight = chartHeight - padding * 2;
-    
-    const maxValue = Math.max(...intervalData, 1); // 至少为1，防止除以0
-    
-    // 计算点的坐标
-    const points = intervalData.map((value, index) => {
-      const x = padding + (index * (graphWidth / (intervalData.length - 1 || 1)));
-      const y = padding + graphHeight - (value / maxValue) * graphHeight;
-      return { x, y };
-    });
-    
-    // 构建路径
-    let pathD = `M ${points[0].x} ${points[0].y}`;
-    points.slice(1).forEach(point => {
-      pathD += ` L ${point.x} ${point.y}`;
-    });
-    
-    return (
-      <Svg width={chartWidth} height={chartHeight}>
-        {/* Y轴 */}
-        <Line
-          x1={padding}
-          y1={padding}
-          x2={padding}
-          y2={chartHeight - padding}
-          stroke={colorScheme === 'dark' ? '#555' : '#ddd'}
-          strokeWidth="1"
-        />
-        
-        {/* X轴 */}
-        <Line
-          x1={padding}
-          y1={chartHeight - padding}
-          x2={chartWidth - padding}
-          y2={chartHeight - padding}
-          stroke={colorScheme === 'dark' ? '#555' : '#ddd'}
-          strokeWidth="1"
-        />
-        
-        {/* 路径 */}
-        <Path
-          d={pathD}
-          fill="none"
-          stroke={chartColor}
-          strokeWidth="2"
-        />
-        
-        {/* 数据点 */}
-        {points.map((point, index) => (
-          <Circle
-            key={index}
-            cx={point.x}
-            cy={point.y}
-            r={4}
-            fill={chartColor}
+    const LineChart = () => {
+      if (intervalData.length === 0) return null;
+
+      const chartWidth = width - 64; // 减去内边距
+      const chartHeight = 200;
+      const padding = 30;
+      const graphWidth = chartWidth - padding * 2;
+      const graphHeight = chartHeight - padding * 2;
+
+      const maxValue = Math.max(...intervalData, 1); // 至少为1，防止除以0
+
+      const averageValue = intervalData.reduce((sum, val) => sum + val, 0) / intervalData.length;
+      const averageY = padding + graphHeight - (averageValue / maxValue) * graphHeight;
+
+      // 计算点的坐标
+      const points = intervalData.map((value, index) => {
+        const x = padding + (index * (graphWidth / (intervalData.length - 1 || 1)));
+        const y = padding + graphHeight - (value / maxValue) * graphHeight;
+        return { x, y };
+      });
+
+      // 构建路径
+      let pathD = `M ${points[0].x} ${points[0].y}`;
+      points.slice(1).forEach(point => {
+        pathD += ` L ${point.x} ${point.y}`;
+      });
+
+      return (
+        <Svg width={chartWidth} height={chartHeight}>
+          {/* Y轴 */}
+          <Line
+            x1={padding}
+            y1={padding}
+            x2={padding}
+            y2={chartHeight - padding}
+            stroke={colorScheme === 'dark' ? '#555' : '#ddd'}
+            strokeWidth="1"
           />
-        ))}
-        
-        {/* X轴标签 */}
-        {points.map((point, index) => (
+
+          {/* X轴 */}
+          <Line
+            x1={padding}
+            y1={chartHeight - padding}
+            x2={chartWidth - padding}
+            y2={chartHeight - padding}
+            stroke={colorScheme === 'dark' ? '#555' : '#ddd'}
+            strokeWidth="1"
+          />
+
+          {/* 折线图路径 */}
+          <Path
+            d={pathD}
+            fill="none"
+            stroke={chartColor}
+            strokeWidth="2"
+          />
+
+          {/* 平均值横线 */}
+          <Line
+            x1={padding}
+            y1={averageY}
+            x2={chartWidth - padding}
+            y2={averageY}
+            stroke="red"
+            strokeDasharray="4 2"
+            strokeWidth="1"
+          />
           <SvgText
-            key={index}
-            x={point.x}
-            y={chartHeight - 10}
+            x={chartWidth - padding}
+            y={averageY - 4}
+            fontSize="10"
+            fill="red"
+            textAnchor="end"
+          >
+            {averageValue.toFixed(1)}
+          </SvgText>
+
+          {/* 数据点 */}
+          {points.map((point, index) => (
+            <Circle
+              key={index}
+              cx={point.x}
+              cy={point.y}
+              r={4}
+              fill={chartColor}
+            />
+          ))}
+
+          {/* X轴标签 */}
+          {points.map((point, index) => (
+            <SvgText
+              key={index}
+              x={point.x}
+              y={chartHeight - 10}
+              fontSize="10"
+              fill={colorScheme === 'dark' ? '#ccc' : '#666'}
+              textAnchor="middle"
+            >
+              {index + 1}
+            </SvgText>
+          ))}
+
+          {/* Y轴最大值标签 */}
+          <SvgText
+            x={padding - 5}
+            y={padding + 5}
             fontSize="10"
             fill={colorScheme === 'dark' ? '#ccc' : '#666'}
-            textAnchor="middle"
+            textAnchor="end"
           >
-            {index + 1}
+            {maxValue}
           </SvgText>
-        ))}
-        
-        {/* Y轴最大值标签 */}
-        <SvgText
-          x={padding - 5}
-          y={padding + 5}
-          fontSize="10"
-          fill={colorScheme === 'dark' ? '#ccc' : '#666'}
-          textAnchor="end"
-        >
-          {maxValue}
-        </SvgText>
-        
-        {/* Y轴0值标签 */}
-        <SvgText
-          x={padding - 5}
-          y={chartHeight - padding + 5}
-          fontSize="10"
-          fill={colorScheme === 'dark' ? '#ccc' : '#666'}
-          textAnchor="end"
-        >
-          0
-        </SvgText>
-      </Svg>
-    );
-  };
-  
+
+          {/* Y轴0值标签 */}
+          <SvgText
+            x={padding - 5}
+            y={chartHeight - padding + 5}
+            fontSize="10"
+            fill={colorScheme === 'dark' ? '#ccc' : '#666'}
+            textAnchor="end"
+          >
+            0
+          </SvgText>
+        </Svg>
+      );
+    };
+
   // 柱状图组件 - 间隔天数频率分布
   const BarChart = () => {
     if (intervalFrequencyData.length === 0) return null;
