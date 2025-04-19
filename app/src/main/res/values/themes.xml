@@ -1,0 +1,36 @@
+<resources>
+    <!-- 浅色主题 -->
+    <style name="Theme.IPredict" parent="Theme.MaterialComponents.Light.DarkActionBar">
+        <!-- 主要颜色 -->
+        <item name="colorPrimary">@color/primary_light</item>
+        <item name="colorPrimaryDark">@color/primary_light</item>
+        <item name="colorAccent">@color/primary_light</item>
+
+        <!-- 背景颜色 -->
+        <item name="android:colorBackground">@color/background_light</item>
+        <item name="colorSurface">@color/surface_light</item>
+
+        <!-- 文本颜色 -->
+        <item name="android:textColorPrimary">@color/text_primary_light</item>
+        <item name="android:textColorSecondary">@color/text_secondary_light</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorOnSurface">@color/text_primary_light</item>
+        <item name="colorOnBackground">@color/text_primary_light</item>
+
+        <!-- 组件样式 -->
+        <item name="materialCardViewStyle">@style/CardView.Light</item>
+        <item name="bottomNavigationStyle">@style/BottomNavigation.Light</item>
+    </style>
+
+    <!-- 卡片样式 -->
+    <style name="CardView.Light" parent="Widget.MaterialComponents.CardView">
+        <item name="cardBackgroundColor">@color/white</item>
+    </style>
+
+    <!-- 底部导航样式 -->
+    <style name="BottomNavigation.Light" parent="Widget.MaterialComponents.BottomNavigationView">
+        <item name="itemIconTint">@color/black</item>
+        <item name="itemTextColor">@color/black</item>
+        <item name="backgroundColor">@color/white</item>
+    </style>
+</resources>

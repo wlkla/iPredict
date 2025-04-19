@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">iPredict</string>
+
+    <!-- 通用 -->
+    <string name="confirm">确定</string>
+    <string name="cancel">取消</string>
+
+    <!-- 日期页面 -->
+    <string name="delete_event_title">删除记录</string>
+    <string name="delete_event_message">确定要删除这条记录吗？</string>
+
+    <!-- 分析页面 -->
+    <string name="title_interval_analysis">周期折线图</string>
+    <string name="title_bar_title">周期柱状图</string>
+    <string name="title_pie_title">周期饼图</string>
+    <string name="no_data_for_analysis">暂无足够数据进行分析</string>
+
+    <!--左侧导航栏-->
+    <string name="app_description">记录事件日期并预测周期</string>
+    <string name="switch_theme">主题设置</string>
+    <string name="theme_light">浅色主题</string>
+    <string name="theme_dark">深色主题</string>
+    <string name="theme_system">跟随系统</string>
+    <string name="nav_drawer_open">打开导航抽屉</string>
+    <string name="nav_drawer_close">关闭导航抽屉</string>
+
+    <!-- 导入功能 -->
+    <string name="import_button">导入</string>
+    <string name="import_success">成功导入 %1$d 条记录</string>
+    <string name="import_partial">导入了 %1$d 条记录，%2$d 条无效</string>
+    <string name="import_fail">导入失败: %1$s</string>
+    <string name="import_no_data">没有找到日期数据</string>
+    <string name="choose_file">选择文件</string>
+
+    <!--添加日期-->
+    <style name="ThemeOverlay.DatePicker" parent="ThemeOverlay.MaterialComponents.Dialog">
+        <item name="colorPrimary">?attr/colorPrimary</item>
+        <item name="colorOnPrimary">?attr/colorOnPrimary</item>
+        <item name="android:textColorPrimary">?android:attr/textColorPrimary</item>
+        <item name="android:textColorSecondary">?android:attr/textColorSecondary</item>
+    </style>
+
+    <!--预警相关-->
+    <string name="channel_name">周期提醒</string>
+    <string name="channel_description">预期日期到达时的提醒</string>
+    <string name="notification_title">今天是预期日期</string>
+    <string name="notification_message">您的预期日期已到达，别忘了更新记录哦！</string>
+</resources>

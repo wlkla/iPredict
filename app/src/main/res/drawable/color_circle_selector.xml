@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="#FF0000" /> <!-- 默认颜色，将在代码中更改 -->
+    <stroke
+        android:width="2dp"
+        android:color="#40FFFFFF" /> <!-- 半透明白色边框，在深色模式下更明显 -->
+    <size
+        android:width="42dp"
+        android:height="42dp" />
+</shape>

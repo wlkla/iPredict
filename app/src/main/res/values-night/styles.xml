@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 在 values-night/styles.xml 中添加 -->
+    <style name="TextInputLayoutStyle.Night" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <item name="boxStrokeColor">#B0BEC5</item> <!-- 使用浅蓝灰色，在黑色背景上更明显 -->
+        <item name="boxStrokeWidth">2dp</item>
+        <item name="hintTextColor">#B0BEC5</item>
+        <item name="android:textColorHint">#80B0BEC5</item>
+    </style>
+</resources>

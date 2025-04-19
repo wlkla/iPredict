@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:id="@+id/nav_group_settings">
+        <item
+            android:id="@+id/nav_theme_group"
+            android:icon="@drawable/ic_theme_selector"
+            android:title="@string/switch_theme">
+            <menu>
+                <group android:checkableBehavior="single">
+                    <item
+                        android:id="@+id/nav_theme_light"
+                        android:icon="@drawable/ic_sun"
+                        android:title="@string/theme_light" />
+                    <item
+                        android:id="@+id/nav_theme_dark"
+                        android:icon="@drawable/ic_moon"
+                        android:title="@string/theme_dark" />
+                    <item
+                        android:id="@+id/nav_theme_system"
+                        android:icon="@drawable/ic_system"
+                        android:title="@string/theme_system" />
+                </group>
+            </menu>
+        </item>
+    </group>
+
+    <group android:id="@+id/nav_group_events">
+        <item
+            android:id="@+id/nav_events_header"
+            android:icon="@drawable/ic_calendar"
+            android:title="@string/event_types"/>
+
+        <item
+            android:id="@+id/nav_add_event"
+            android:icon="@drawable/ic_add"
+            android:title="@string/add_event_type" />
+    </group>
+</menu>
