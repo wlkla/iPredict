@@ -386,9 +386,6 @@ export default function CountdownScreen() {
           />
         </View>
       }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">倒计时</ThemedText>
-      </ThemedView>
 
       {/* 主内容 */}
       <Animated.View style={[styles.content, containerAnimatedStyle]}>

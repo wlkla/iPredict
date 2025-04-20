@@ -113,6 +113,15 @@ export async function cancelAllNotifications() {
   }
 }
 
+// 判断两个日期是否是同一天
+function isSameDay(date1: Date, date2: Date): boolean {
+  return (
+    date1.getFullYear() === date2.getFullYear() &&
+    date1.getMonth() === date2.getMonth() &&
+    date1.getDate() === date2.getDate()
+  );
+}
+
 // 设置倒计时提醒
 export async function scheduleCountdownNotification(
   eventId: string,
@@ -131,20 +140,35 @@ export async function scheduleCountdownNotification(
     await cancelNotification(`${eventId}_day_before`);
     await cancelNotification(`${eventId}_day_of`);
     
-    // 计算前一天的日期（早上8点）
-    const dayBeforeDate = new Date(targetDate);
-    dayBeforeDate.setDate(dayBeforeDate.getDate() - daysBefore);
-    dayBeforeDate.setHours(8, 0, 0, 0);
-    
-    // 计算当天的日期（早上8点）
-    const dayOfDate = new Date(targetDate);
-    dayOfDate.setHours(8, 0, 0, 0);
-    
-    // 如果日期已经过了，不设置通知
+    // 当前日期（清除时间部分进行日期比较）
     const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     
-    // 设置前一天的通知
-    if (dayBeforeDate > now) {
+    // 目标日期（清除时间部分进行日期比较）
+    const target = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
+    
+    // 计算前一天的日期
+    const dayBefore = new Date(target);
+    dayBefore.setDate(dayBefore.getDate() - daysBefore);
+    
+    // 设置通知的触发时间为早上8点
+    const createNotificationTime = (baseDate: Date): Date => {
+      const notificationTime = new Date(baseDate);
+      notificationTime.setHours(8, 0, 0, 0);
+      
+      // 如果当前时间已经超过了今天的8点，则设置为明天的8点
+      if (isSameDay(baseDate, now) && now.getHours() >= 8) {
+        notificationTime.setDate(notificationTime.getDate() + 1);
+      }
+      
+      return notificationTime;
+    };
+    
+    // 判断是否应该设置前一天的通知
+    // 只有当前日期小于或等于前一天日期时才设置
+    if (today.getTime() <= dayBefore.getTime()) {
+      const notificationTime = createNotificationTime(dayBefore);
+      
       const dayBeforeId = await Notifications.scheduleNotificationAsync({
         content: {
           title: '预期日期提醒',
@@ -154,16 +178,21 @@ export async function scheduleCountdownNotification(
           categoryIdentifier: 'countdown',
         },
         trigger: {
-          date: dayBeforeDate,
+          date: notificationTime,
         },
       });
       
       // 保存通知ID
       await saveNotificationId(`${eventId}_day_before`, dayBeforeId);
+      console.log(`已设置前一天提醒: ${notificationTime.toLocaleString()}`);
     }
     
-    // 设置当天的通知
-    if (dayOfDate > now) {
+    // 判断是否应该设置当天的通知
+    // 只有当前日期小于目标日期或当天但未到8点时才设置
+    if (today.getTime() < target.getTime() ||
+        (isSameDay(today, target) && now.getHours() < 8)) {
+      const notificationTime = createNotificationTime(target);
+      
       const dayOfId = await Notifications.scheduleNotificationAsync({
         content: {
           title: '预期日期已到',
@@ -173,12 +202,13 @@ export async function scheduleCountdownNotification(
           categoryIdentifier: 'countdown',
         },
         trigger: {
-          date: dayOfDate,
+          date: notificationTime,
         },
       });
       
       // 保存通知ID
       await saveNotificationId(`${eventId}_day_of`, dayOfId);
+      console.log(`已设置当天提醒: ${notificationTime.toLocaleString()}`);
     }
     
     return true;
@@ -206,12 +236,15 @@ export async function updateAllCountdownNotifications(records: any[]) {
       return true;
     }
     
-    // 按日期升序排序记录
+    // 按日期降序排序记录（最新的在前面）
     const sortedRecords = [...records].sort((a, b) => {
       const dateA = new Date(a.date);
       const dateB = new Date(b.date);
-      return dateA.getTime() - dateB.getTime();
+      return dateB.getTime() - dateA.getTime();
     });
+    
+    // 获取最新一条记录
+    const lastRecord = sortedRecords[0];
     
     // 计算平均间隔
     let totalIntervals = 0;
@@ -228,13 +261,14 @@ export async function updateAllCountdownNotifications(records: any[]) {
       ? Math.round(totalIntervals / intervalCount)
       : 30; // 默认30天
     
-    // 获取最近一条记录
-    const lastRecord = sortedRecords[sortedRecords.length - 1];
-    const lastDate = new Date(lastRecord.date);
-    
     // 计算预期日期
+    const lastDate = new Date(lastRecord.date);
     const expectedDate = new Date(lastDate);
     expectedDate.setDate(expectedDate.getDate() + avgInterval);
+    
+    console.log(`最后记录日期: ${lastDate.toLocaleDateString()}`);
+    console.log(`平均间隔天数: ${avgInterval}`);
+    console.log(`预期下次日期: ${expectedDate.toLocaleDateString()}`);
     
     // 为预期日期设置通知
     await scheduleCountdownNotification(lastRecord.id, expectedDate);

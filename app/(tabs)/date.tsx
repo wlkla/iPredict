@@ -265,7 +265,7 @@ export default function DateScreen() {
             headerHeight={180}
             headerGradient={{
               light: {
-                colors: ['#FFA726', '#FFCC80'],
+                colors: ['#FFF886', '#F072B6'],
                 start: { x: 0, y: 0 },
                 end: { x: 1, y: 1 }
               },
@@ -285,10 +285,6 @@ export default function DateScreen() {
                 />
               </View>
             }>
-        <ThemedView style={styles.titleContainer}>
-          <ThemedText type="title">记录日期</ThemedText>
-        </ThemedView>
-        
         <ThemedView style={styles.dateContainer}>
           
           {dateRecords.length === 0 ? (
@@ -337,7 +333,7 @@ export default function DateScreen() {
             >
               {/* 替换纯色背景为渐变色背景 */}
               <LinearGradient
-                colors={colorScheme === 'dark' ? ['#E65100', '#EF6C00'] : ['#FFA726', '#FFCC80']}
+                colors={colorScheme === 'dark' ? ['#E65100', '#EF6C00'] : ['#FFF886', '#F072B6']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={styles.buttonGradient}
@@ -377,7 +373,7 @@ export default function DateScreen() {
                     >
                       {/* 替换纯色为渐变色 */}
                       <LinearGradient
-                        colors={colorScheme === 'dark' ? ['#E65100', '#EF6C00'] : ['#FFA726', '#FFCC80']}
+                        colors={colorScheme === 'dark' ? ['#E65100', '#EF6C00'] : ['#FFF886', '#F072B6']}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 1 }}
                         style={StyleSheet.absoluteFill}

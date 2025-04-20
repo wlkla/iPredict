@@ -565,7 +565,7 @@ export default function AnalyticsScreen() {
             headerHeight={180}
             headerGradient={{
               light: {
-                colors: ['#4CAF50', '#8BC34A'],
+                colors: ['#3C8CE7', '#00EAFF'],
                 start: { x: 0, y: 0 },
                 end: { x: 1, y: 1 }
               },

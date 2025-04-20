@@ -14,7 +14,7 @@ const MAPPING = {
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
   // 已有图标映射
-  'pie_chart': 'pie_chart',
+  'pie_chart': 'pie-chart',
   'timer': 'timer',
   'calendar': 'event',
   'analytics': 'analytics',
@@ -27,8 +27,8 @@ const MAPPING = {
   'volume_up': 'volume_up',
   'vibration': 'vibration',
   'cleaning_services': 'cleaning_services',
-  'cloud_download': 'cloud_download',
-  'cloud_up': 'cloud_up',
+  'cloud_download': 'cloud-download',
+  'cloud_up': 'cloud-upload',
   'delete': 'delete',
   'star': 'star',
   'feedback': 'feedback',
@@ -36,9 +36,9 @@ const MAPPING = {
   'public': 'public',
   'check': 'check',
   'timelapse': 'timelapse',
-  'trending_up': 'trending_up',
+  'trending_up': 'ssid-chart',
   'flag': 'flag',
-  'chevron_right': 'chevron_right',
+  'chevron_right': 'chevron-right',
   // 新增图标映射
   'add': 'add',
 } as Partial<

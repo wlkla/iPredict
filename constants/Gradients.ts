@@ -38,7 +38,7 @@ export const Gradients = {
   },
   date: {
     light: {
-      colors: ['#FFA726', '#FFCC80'],
+      colors: ['#FFF886', '#F072B6'],
       start: { x: 0, y: 0 },
       end: { x: 1, y: 1 }
     },
