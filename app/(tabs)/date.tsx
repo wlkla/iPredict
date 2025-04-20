@@ -46,34 +46,6 @@ export default function DateScreen() {
   const [datePickerVisible, setDatePickerVisible] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
   
-  // SVG图标
-  const noDataSvg = `<svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
-    <!-- 日历背景 -->
-    <rect x="100" y="100" width="300" height="300" rx="20" ry="20" fill="#f0f0f0" stroke="#cccccc" stroke-width="4"/>
-    
-    <!-- 日历顶部 -->
-    <rect x="100" y="100" width="300" height="50" rx="20" ry="20" fill="#0a7ea4"/>
-    <rect x="100" y="130" width="300" height="20" fill="#0a7ea4"/>
-    
-    <!-- 日历格子 -->
-    <line x1="166" y1="180" x2="166" y2="400" stroke="#dddddd" stroke-width="2"/>
-    <line x1="232" y1="180" x2="232" y2="400" stroke="#dddddd" stroke-width="2"/>
-    <line x1="298" y1="180" x2="298" y2="400" stroke="#dddddd" stroke-width="2"/>
-    <line x1="364" y1="180" x2="364" y2="400" stroke="#dddddd" stroke-width="2"/>
-    
-    <line x1="100" y1="235" x2="400" y2="235" stroke="#dddddd" stroke-width="2"/>
-    <line x1="100" y1="290" x2="400" y2="290" stroke="#dddddd" stroke-width="2"/>
-    <line x1="100" y1="345" x2="400" y2="345" stroke="#dddddd" stroke-width="2"/>
-    
-    <!-- 叹号标志 -->
-    <circle cx="250" cy="260" r="50" fill="#ffcc00" opacity="0.8"/>
-    <rect x="245" y="230" width="10" height="40" rx="5" ry="5" fill="white"/>
-    <circle cx="250" cy="285" r="5" fill="white"/>
-    
-    <!-- 提示箭头 -->
-    <path d="M320 350 L350 380 L380 350" stroke="#0a7ea4" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-  </svg>`;
-  
   // 使用 useFocusEffect 替代 useEffect，确保每次页面获得焦点时都重新加载数据
   useFocusEffect(
     useCallback(() => {
