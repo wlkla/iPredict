@@ -563,7 +563,7 @@ export default function AnalyticsScreen() {
   return (
           <ParallaxScrollView
             headerHeight={180}
-            headerGradient={Gradients.analytics}
+            headerGradient={CurrentGradients.analytics}
             headerImage={
               <View style={styles.headerImageContainer}>
                 <IconSymbol

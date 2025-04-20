@@ -237,7 +237,7 @@ export default function DateScreen() {
     <ThemedView style={styles.container}>
           <ParallaxScrollView
             headerHeight={180}
-            headerGradient={Gradients.date}
+            headerGradient={CurrentGradients.date}
             headerImage={
               <View style={styles.headerImageContainer}>
                 <IconSymbol
