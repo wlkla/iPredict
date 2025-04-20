@@ -1,3 +1,5 @@
+import { Image } from 'react-native';
+import { CurrentGradients } from '@/constants/Gradients';
 import { StyleSheet, Platform, Dimensions, TouchableOpacity, View } from 'react-native';
 import React, { useEffect, useState, useCallback } from 'react';
 import Animated, {
@@ -478,17 +480,15 @@ export default function AnalyticsScreen() {
   const renderChartContent = () => {
     if (!hasData) {
       return (
-        <ThemedView style={styles.noDataContainer}>
-          <IconSymbol
-            size={80}
-            color={iconColor}
-            name="analytics"
-            style={styles.noDataIcon}
-          />
-          <ThemedText style={styles.noDataText}>
-            暂无数据可供分析，请先添加数据
-          </ThemedText>
-        </ThemedView>
+              <ThemedView style={styles.noDataContainer}>
+                <Image
+                  source={require('@/assets/images/analytics-empty.svg')}
+                  style={styles.noDataIcon}
+                />
+                <ThemedText style={styles.noDataText}>
+                  暂无数据可供分析，请先添加数据
+                </ThemedText>
+              </ThemedView>
       );
     }
     
@@ -563,18 +563,7 @@ export default function AnalyticsScreen() {
   return (
           <ParallaxScrollView
             headerHeight={180}
-            headerGradient={{
-              light: {
-                colors: ['#3C8CE7', '#00EAFF'],
-                start: { x: 0, y: 0 },
-                end: { x: 1, y: 1 }
-              },
-              dark: {
-                colors: ['#1B5E20', '#2E7D32'],
-                start: { x: 0, y: 0 },
-                end: { x: 1, y: 1 }
-              }
-            }}
+            headerGradient={Gradients.analytics}
             headerImage={
               <View style={styles.headerImageContainer}>
                 <IconSymbol
@@ -708,4 +697,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 10,
   },
+    emptyImage: {
+      width: 200,
+      height: 200,
+      marginBottom: 16,
+    },
 });

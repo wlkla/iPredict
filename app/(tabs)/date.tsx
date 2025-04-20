@@ -1,3 +1,5 @@
+import { Image } from 'react-native';
+import { CurrentGradients } from '@/constants/Gradients';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StyleSheet, TouchableOpacity, Alert, Platform, View } from 'react-native';
 import React, { useState, useEffect, useCallback } from 'react';
@@ -263,18 +265,7 @@ export default function DateScreen() {
     <ThemedView style={styles.container}>
           <ParallaxScrollView
             headerHeight={180}
-            headerGradient={{
-              light: {
-                colors: ['#FFF886', '#F072B6'],
-                start: { x: 0, y: 0 },
-                end: { x: 1, y: 1 }
-              },
-              dark: {
-                colors: ['#E65100', '#EF6C00'],
-                start: { x: 0, y: 0 },
-                end: { x: 1, y: 1 }
-              }
-            }}
+            headerGradient={Gradients.date}
             headerImage={
               <View style={styles.headerImageContainer}>
                 <IconSymbol
@@ -288,15 +279,13 @@ export default function DateScreen() {
         <ThemedView style={styles.dateContainer}>
           
           {dateRecords.length === 0 ? (
-            <ThemedView style={styles.emptyContainer}>
-              <SvgXml
-                xml={noDataSvg}
-                width={200}
-                height={200}
-                style={styles.emptyImage}
-              />
-              <ThemedText style={styles.emptyText}>暂无记录，点击右下角按钮添加</ThemedText>
-            </ThemedView>
+           <ThemedView style={styles.emptyContainer}>
+             <Image
+               source={require('@/assets/images/date-empty.svg')}
+               style={styles.emptyImage}
+             />
+             <ThemedText style={styles.emptyText}>暂无记录，点击右下角按钮添加</ThemedText>
+           </ThemedView>
           ) : (
             dateRecords.map((record) => (
               <Animated.View
@@ -540,4 +529,9 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: 'bold',
   },
+    emptyImage: {
+      width: 200,
+      height: 200,
+      marginBottom: 16,
+    },
 });

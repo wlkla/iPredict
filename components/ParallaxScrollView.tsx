@@ -11,7 +11,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { ThemedView } from '@/components/ThemedView';
 import { useBottomTabOverflow } from '@/components/ui/TabBarBackground';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { Gradients } from '@/constants/Gradients';
+import { CurrentGradients } from '@/constants/Gradients';
 
 const DEFAULT_HEADER_HEIGHT = 250;
 
@@ -47,8 +47,8 @@ export default function ParallaxScrollView({
   
   // 默认渐变配置
   const defaultGradient = {
-    light: Gradients.primary,
-    dark: Gradients.primaryDark,
+    light: CurrentGradients.countdown.light,
+    dark: CurrentGradients.countdown.dark,
   };
   
   // 使用传入的渐变或默认渐变

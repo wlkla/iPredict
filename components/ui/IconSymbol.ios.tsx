@@ -16,6 +16,7 @@ const SF_SYMBOLS_MAPPING = {
   'dark_mode': 'moon.fill',
   'volume_up': 'speaker.wave.3.fill',
   'vibration': 'waveform.path',
+    'color_palette': 'paintpalette.fill',
   'cleaning_services': 'trash.fill',
   'cloud_download': 'arrow.down.circle.fill',
   'cloud_up': 'arrow.up.circle.fill',

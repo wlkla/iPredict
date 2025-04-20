@@ -1,3 +1,6 @@
+import { useRouter } from 'expo-router';
+import { GradientPresets } from '@/constants/Gradients';
+import { getCurrentThemePresetCurrentThemePresetName, setThemePreset } from '@/services/ThemeService';
 import { StyleSheet, Switch, ScrollView, TouchableOpacity, Alert, Platform, View, Dimensions } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { Stack } from 'expo-router';
@@ -25,6 +28,8 @@ const ENCRYPTION_KEY = 'ipredict_secure_key_2025';
 export default function SettingsScreen() {
   const colorScheme = useColorScheme();
   const { themeMode, setThemeMode } = useThemeContext();
+    const [currentThemePreset, setCurrentThemePreset] = useState('default');
+    const router = useRouter();
   
   const iconColor = Colors[colorScheme].icon;
   const tintColor = Colors[colorScheme].tint;
@@ -38,9 +43,14 @@ export default function SettingsScreen() {
   const [darkModeEnabled, setDarkModeEnabled] = useState(colorScheme === 'dark');
   
   // 当系统主题变化时更新开关状态
-  useEffect(() => {
-    setDarkModeEnabled(colorScheme === 'dark');
-  }, [colorScheme]);
+    useEffect(() => {
+      const loadThemeSettings = async () => {
+        const presetName = await getCurrentThemePresetName();
+        setCurrentThemePreset(presetName);
+      };
+      
+      loadThemeSettings();
+    }, []);
   
   // 加载通知设置
   useEffect(() => {
@@ -62,6 +72,38 @@ export default function SettingsScreen() {
     }
     setter(value);
   };
+    
+    const selectThemePreset = async () => {
+      const presets = Object.keys(GradientPresets);
+      
+      Alert.alert(
+        '选择主题风格',
+        '请选择一个预设主题或自定义主题',
+        [
+          ...presets.map(preset => ({
+            text: preset === 'default' ? '默认主题' :
+                  preset === 'blueOcean' ? '海洋蓝' :
+                  preset === 'purpleHaze' ? '紫色霞光' :
+                  preset === 'greenMeadow' ? '绿色草原' : preset,
+            onPress: async () => {
+              await setThemePreset(preset);
+              setCurrentThemePreset(preset);
+            }
+          })),
+          {
+            text: '自定义主题',
+            onPress: () => {
+              // 使用 router 而不是 navigation
+              router.push('/theme-editor');
+            }
+          },
+          {
+            text: '取消',
+            style: 'cancel'
+          }
+        ]
+      );
+    };
   
   // 切换通知开关
   const toggleNotifications = async (value: boolean) => {
@@ -374,6 +416,26 @@ export default function SettingsScreen() {
                   <ThemedText style={styles.settingText}>主题设置</ThemedText>
                   <ThemedText style={styles.settingSubtext}>
                     {themeMode === 'system' ? '跟随系统' : themeMode === 'dark' ? '深色' : '浅色'}
+                  </ThemedText>
+                </View>
+              </ThemedView>
+              <IconSymbol name="chevron_right" size={24} color={iconColor} />
+            </TouchableOpacity>
+          
+          <TouchableOpacity
+              style={styles.buttonItem}
+              onPress={selectThemePreset}
+            >
+              <ThemedView style={styles.settingInfo}>
+                <IconSymbol name="color_palette" size={24} color={iconColor} />
+                <View style={{ flex: 1 }}>
+                  <ThemedText style={styles.settingText}>主题风格</ThemedText>
+                  <ThemedText style={styles.settingSubtext}>
+                    {currentThemePreset === 'default' ? '默认主题' :
+                     currentThemePreset === 'blueOcean' ? '海洋蓝' :
+                     currentThemePreset === 'purpleHaze' ? '紫色霞光' :
+                     currentThemePreset === 'greenMeadow' ? '绿色草原' :
+                     currentThemePreset === 'custom' ? '自定义主题' : currentThemePreset}
                   </ThemedText>
                 </View>
               </ThemedView>

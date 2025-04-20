@@ -1,3 +1,5 @@
+import { Image } from 'react-native';
+import { CurrentGradients } from '@/constants/Gradients';
 import { ScrollView } from 'react-native';
 import { StyleSheet, TouchableOpacity, Dimensions, View } from 'react-native';
 import React, { useState, useEffect, useCallback } from 'react';
@@ -289,10 +291,10 @@ export default function CountdownScreen() {
     const strokeWidth = circleSize * 0.03;
     const innerCircleSize = circleSize - strokeWidth * 2;
     
-    // 渐变颜色
+    // 渐变颜色 - 使用CurrentGradients
     const gradientColors = isOverdue
-      ? ['#FF5F6D', '#FF9966']
-      : ['#00C9FF', '#92FE9D'];
+      ? CurrentGradients.countdown.dark.colors
+      : CurrentGradients.countdown.light.colors;
     
     // 动画样式
     const fillAnimatedStyle = useAnimatedStyle(() => {
@@ -364,18 +366,7 @@ export default function CountdownScreen() {
   return (
     <ParallaxScrollView
       headerHeight={180}
-      headerGradient={{
-        light: {
-          colors: ['#00C9FF', '#92FE9D'],
-          start: { x: 0, y: 0 },
-          end: { x: 1, y: 1 }
-        },
-        dark: {
-          colors: ['#0077B6', '#48BFE3'],
-          start: { x: 0, y: 0 },
-          end: { x: 1, y: 1 }
-        }
-      }}
+      headerGradient={CurrentGradients.countdown}
       headerImage={
         <View style={styles.headerImageContainer}>
           <IconSymbol
@@ -397,19 +388,22 @@ export default function CountdownScreen() {
         </ThemedText>
         
         {/* 进度圆环或空状态 */}
-        {dateRecords.length === 0 ? (
-          <View style={styles.emptyState}>
-            <IconSymbol name="calendar" size={80} color={tintColor} />
-            <ThemedText style={styles.emptyText}>
-              点击下方按钮添加您的第一条记录
-            </ThemedText>
-          </View>
-        ) : (
-          <ProgressCircle
-            progress={progressValue}
-            isOverdue={isOverdue}
-          />
-        )}
+          {dateRecords.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Image
+                source={require('@/assets/images/countdown-empty.svg')}
+                style={styles.emptyImage}
+              />
+              <ThemedText style={styles.emptyText}>
+                点击下方按钮添加您的第一条记录
+              </ThemedText>
+            </View>
+          ) : (
+            <ProgressCircle
+              progress={progressValue}
+              isOverdue={isOverdue}
+            />
+          )}
         
         {/* 信息卡片 */}
         {dateRecords.length > 0 && (
@@ -451,7 +445,7 @@ export default function CountdownScreen() {
             onPress={addTodayRecord}
           >
             <LinearGradient
-              colors={isOverdue ? ['#FF5F6D', '#FF9966'] : ['#00C9FF', '#92FE9D']}
+              colors={isOverdue ? CurrentGradients.countdown.light.colors : CurrentGradients.countdown.light.colors}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.buttonGradient}
@@ -656,4 +650,9 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
+    emptyImage: {
+      width: 200,
+      height: 200,
+      marginBottom: 16,
+    },
 });

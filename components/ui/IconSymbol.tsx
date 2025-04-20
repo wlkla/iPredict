@@ -21,6 +21,7 @@ const MAPPING = {
   'menu': 'menu',
   'home': 'home',
   'settings': 'settings',
+    'color_palette': 'palette',
   'info': 'info',
   'notifications': 'notifications',
   'dark_mode': 'dark_mode',
