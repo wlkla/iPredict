@@ -77,7 +77,7 @@ object ShareImageUtils {
             intervalsText.text = if (intervals.isEmpty()) {
                 "最近间隔：暂无数据"
             } else {
-                "最近间隔：" + intervals.take(6).joinToString(" · ") { "${it}天" }
+                "最近间隔：" + intervals.take(4).joinToString(" · ") { "${it}天" }
             }
             footer.text = "iPredict · 记录周期 · 更懂自己"
         }
@@ -108,7 +108,7 @@ object ShareImageUtils {
             view.findViewById<TextView>(R.id.shareAnalysisIntervals).text = if (intervals.isEmpty()) {
                 "最近间隔：暂无数据"
             } else {
-                "最近间隔：" + intervals.take(6).joinToString(" · ") { "${it}天" }
+                "最近间隔：" + intervals.take(4).joinToString(" · ") { "${it}天" }
             }
             view.findViewById<TextView>(R.id.shareAnalysisFooter).text = "iPredict · 数据可视化"
             view.findViewById<ImageView>(R.id.shareLineImage).setImageBitmap(lineBmp)

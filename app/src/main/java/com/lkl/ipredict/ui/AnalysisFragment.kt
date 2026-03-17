@@ -323,7 +323,7 @@ class AnalysisFragment : Fragment(), AccentAware {
                 view.findViewById<TextView>(R.id.shareAnalysisIntervals).text = if (latestIntervals.isEmpty()) {
                     "最近间隔：暂无数据"
                 } else {
-                    "最近间隔：" + latestIntervals.take(6).joinToString(" · ") { "${it}天" }
+                    "最近间隔：" + latestIntervals.take(4).joinToString(" · ") { "${it}天" }
                 }
                 view.findViewById<TextView>(R.id.shareAnalysisFooter).text = "iPredict · 数据可视化"
                 view.findViewById<ImageView>(R.id.shareLineImage).setImageBitmap(lineBmp)

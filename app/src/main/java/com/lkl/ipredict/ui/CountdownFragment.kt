@@ -88,9 +88,9 @@ class CountdownFragment : Fragment(), AccentAware {
             "${intervals.average().roundToInt()}天"
         }
         binding.txtInsightRecentIntervals.text = if (intervals.isEmpty()) {
-            "近几次间隔：暂无数据"
+            "最近间隔：暂无数据"
         } else {
-            "近几次间隔：${intervals.take(4).joinToString(" · ") { "${it}天" }}"
+            "最近间隔：${intervals.take(4).joinToString(" · ") { "${it}天" }}"
         }
 
         if (state == null) {
