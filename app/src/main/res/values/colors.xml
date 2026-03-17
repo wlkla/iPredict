@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <color name='black'>#FF000000</color>
+    <color name='white'>#FFFFFFFF</color>
+    <color name='page_bg'>#FFFAF7FF</color>
+    <color name='card_bg'>#FFFFFFFF</color>
+    <color name='text_primary'>#FF1A1A1A</color>
+    <color name='text_secondary'>#FF777777</color>
+    <color name='divider'>#FFDCD4EE</color>
+    <color name='neu_stroke'>#FFE7DFF5</color>
+    <color name='mint'>#FFB79CFF</color>
+    <color name='mint_track'>#FFF1EAFE</color>
+    <color name='ring_fresh'>#FFB79CFF</color>
+    <color name='ring_mid'>#FFD1B2FF</color>
+    <color name='ring_late'>#FFF58A8A</color>
+    <color name='chart_value_text'>#FF444444</color>
+    <color name='chart_label_text'>#FF333333</color>
+    <color name='chart_limit_line'>#FF9B7EE6</color>
+    <color name='chart_limit_text'>#FF8263D1</color>
+    <color name='action_shadow'>#12000000</color>
+    <color name='action_highlight'>#FFF8F3FF</color>
+    <color name='action_surface'>#FFFFFFFF</color>
+    <color name='action_border_soft'>#B8D8C8F3</color>
+
+    <color name='bottom_nav_selected'>#FF7D5CD6</color>
+    <color name='bottom_nav_unselected'>#FF777777</color>
+</resources>

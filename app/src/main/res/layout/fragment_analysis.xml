@@ -1,0 +1,155 @@
+<?xml version='1.0' encoding='utf-8'?>
+<ScrollView xmlns:android='http://schemas.android.com/apk/res/android'
+    xmlns:app='http://schemas.android.com/apk/res-auto'
+    android:layout_width='match_parent'
+    android:layout_height='match_parent'
+    android:background='@color/page_bg'
+    android:fillViewport='true'>
+
+    <LinearLayout
+        android:layout_width='match_parent'
+        android:layout_height='wrap_content'
+        android:orientation='vertical'
+        android:padding='14dp'>
+
+        <LinearLayout
+            android:layout_width='match_parent'
+            android:layout_height='wrap_content'
+            android:gravity='center_vertical'
+            android:orientation='horizontal'>
+
+            <LinearLayout
+                android:layout_width='0dp'
+                android:layout_height='wrap_content'
+                android:layout_weight='1'
+                android:orientation='vertical'>
+
+                <TextView
+                    android:layout_width='wrap_content'
+                    android:layout_height='wrap_content'
+                    android:text='周期分析'
+                    android:textColor='@color/text_primary'
+                    android:textSize='18sp'
+                    android:textStyle='bold' />
+            </LinearLayout>
+
+            <ImageView
+                android:id='@+id/btnShareAnalysis'
+                android:layout_width='24dp'
+                android:layout_height='24dp'
+                android:contentDescription='share'
+                android:src='@drawable/ic_share_hd'
+                app:tint='@color/text_primary' />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id='@+id/layoutShareCharts'
+            android:layout_width='match_parent'
+            android:layout_height='wrap_content'
+            android:orientation='vertical'
+            android:paddingTop='6dp'
+            android:paddingBottom='6dp'>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id='@+id/cardLineChart'
+                android:layout_width='match_parent'
+                android:layout_height='wrap_content'
+                android:layout_marginTop='12dp'
+                app:cardBackgroundColor='@color/page_bg'
+                app:cardCornerRadius='22dp'
+                app:cardElevation='0dp'
+                app:strokeColor='@color/neu_stroke'
+                app:strokeWidth='1dp'>
+
+                <LinearLayout
+                    android:layout_width='match_parent'
+                    android:layout_height='wrap_content'
+                    android:orientation='vertical'
+                    android:padding='12dp'>
+
+                    <TextView
+                        android:layout_width='wrap_content'
+                        android:layout_height='wrap_content'
+                        android:text='周期折线图'
+                        android:textColor='@color/text_primary'
+                        android:textSize='15sp'
+                        android:textStyle='bold' />
+
+                    <com.github.mikephil.charting.charts.LineChart
+                        android:id='@+id/lineChart'
+                        android:layout_width='match_parent'
+                        android:layout_height='190dp'
+                        android:layout_marginTop='8dp' />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id='@+id/cardBarChart'
+                android:layout_width='match_parent'
+                android:layout_height='wrap_content'
+                android:layout_marginTop='12dp'
+                app:cardBackgroundColor='@color/page_bg'
+                app:cardCornerRadius='22dp'
+                app:cardElevation='0dp'
+                app:strokeColor='@color/neu_stroke'
+                app:strokeWidth='1dp'>
+
+                <LinearLayout
+                    android:layout_width='match_parent'
+                    android:layout_height='wrap_content'
+                    android:orientation='vertical'
+                    android:padding='12dp'>
+
+                    <TextView
+                        android:layout_width='wrap_content'
+                        android:layout_height='wrap_content'
+                        android:text='周期柱状图'
+                        android:textColor='@color/text_primary'
+                        android:textSize='15sp'
+                        android:textStyle='bold' />
+
+                    <com.github.mikephil.charting.charts.BarChart
+                        android:id='@+id/barChart'
+                        android:layout_width='match_parent'
+                        android:layout_height='190dp'
+                        android:layout_marginTop='8dp' />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id='@+id/cardPieChart'
+                android:layout_width='match_parent'
+                android:layout_height='wrap_content'
+                android:layout_marginTop='12dp'
+                android:layout_marginBottom='12dp'
+                app:cardBackgroundColor='@color/page_bg'
+                app:cardCornerRadius='22dp'
+                app:cardElevation='0dp'
+                app:strokeColor='@color/neu_stroke'
+                app:strokeWidth='1dp'>
+
+                <LinearLayout
+                    android:layout_width='match_parent'
+                    android:layout_height='wrap_content'
+                    android:orientation='vertical'
+                    android:padding='12dp'>
+
+                    <TextView
+                        android:layout_width='wrap_content'
+                        android:layout_height='wrap_content'
+                        android:text='周期饼图'
+                        android:textColor='@color/text_primary'
+                        android:textSize='15sp'
+                        android:textStyle='bold' />
+
+                    <com.github.mikephil.charting.charts.PieChart
+                        android:id='@+id/pieChart'
+                        android:layout_width='match_parent'
+                        android:layout_height='210dp'
+                        android:layout_marginTop='8dp' />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

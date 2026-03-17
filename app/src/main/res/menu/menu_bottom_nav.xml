@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='utf-8'?>
+<menu xmlns:android='http://schemas.android.com/apk/res/android'>
+    <item
+        android:id='@+id/tab_countdown'
+        android:icon='@android:drawable/ic_lock_idle_alarm'
+        android:title='倒计时' />
+
+    <item
+        android:id='@+id/tab_dates'
+        android:icon='@android:drawable/ic_menu_my_calendar'
+        android:title='日期' />
+
+    <item
+        android:id='@+id/tab_analysis'
+        android:icon='@drawable/ic_bottom_line_chart'
+        android:title='分析' />
+</menu>

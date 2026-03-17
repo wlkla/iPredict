@@ -1,0 +1,277 @@
+<?xml version='1.0' encoding='utf-8'?>
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android='http://schemas.android.com/apk/res/android'
+    xmlns:app='http://schemas.android.com/apk/res-auto'
+    android:id='@+id/drawerLayout'
+    android:layout_width='match_parent'
+    android:layout_height='match_parent'>
+
+    <LinearLayout
+        android:layout_width='match_parent'
+        android:layout_height='match_parent'
+        android:orientation='vertical'>
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id='@+id/toolbar'
+            android:layout_width='match_parent'
+            android:layout_height='72dp'
+            android:background='@color/page_bg'
+            app:contentInsetStart='0dp'
+            app:elevation='0dp'>
+
+            <ImageButton
+                android:id='@+id/navIcon'
+                android:layout_width='44dp'
+                android:layout_height='44dp'
+                android:layout_gravity='start|center_vertical'
+                android:background='@android:color/transparent'
+                android:contentDescription='@string/menu'
+                android:padding='8dp'
+                android:src='@drawable/ic_drawer_menu_hd'
+                app:tint='@color/text_primary' />
+
+            <TextView
+                android:id='@+id/toolbarTitle'
+                android:layout_width='wrap_content'
+                android:layout_height='wrap_content'
+                android:layout_gravity='center_vertical'
+                android:layout_marginStart='44dp'
+                android:text='倒计时'
+                android:textColor='@color/text_primary'
+                android:textSize='26sp'
+                android:textStyle='bold' />
+        </com.google.android.material.appbar.MaterialToolbar>
+
+        <View
+            android:id='@+id/topDivider'
+            android:layout_width='match_parent'
+            android:layout_height='1dp'
+            android:background='@color/neu_stroke' />
+
+        <androidx.fragment.app.FragmentContainerView
+            android:id='@+id/fragmentContainer'
+            android:layout_width='match_parent'
+            android:layout_height='0dp'
+            android:layout_weight='1' />
+
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id='@+id/bottomNav'
+            android:layout_width='match_parent'
+            android:layout_height='wrap_content'
+            android:background='@color/page_bg'
+            app:itemIconTint='@color/bottom_nav_color'
+            app:itemTextColor='@color/bottom_nav_color'
+            app:labelVisibilityMode='labeled'
+            app:menu='@menu/menu_bottom_nav' />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width='300dp'
+        android:layout_height='match_parent'
+        android:layout_gravity='start'
+        android:background='@color/page_bg'
+        android:orientation='vertical'>
+
+        <include layout='@layout/layout_drawer_header' />
+
+        <ScrollView
+            android:layout_width='match_parent'
+            android:layout_height='match_parent'>
+
+            <LinearLayout
+                android:layout_width='match_parent'
+                android:layout_height='wrap_content'
+                android:orientation='vertical'
+                android:padding='16dp'>
+
+                <TextView
+                    android:id='@+id/drawerThemeTitle'
+                    android:layout_width='wrap_content'
+                    android:layout_height='wrap_content'
+                    android:text='主题设置'
+                    android:textColor='@color/text_primary'
+                    android:textSize='16sp'
+                    android:textStyle='bold' />
+
+                <TextView
+                    android:id='@+id/drawerThemeLight'
+                    style='@style/TextAppearance.Material3.BodyLarge'
+                    android:layout_width='match_parent'
+                    android:layout_height='wrap_content'
+                    android:layout_marginTop='10dp'
+                    android:background='@drawable/bg_neu_soft'
+                    android:padding='12dp'
+                    android:text='☀  浅色主题'
+                    android:textColor='@color/text_primary' />
+
+                <TextView
+                    android:id='@+id/drawerThemeDark'
+                    style='@style/TextAppearance.Material3.BodyLarge'
+                    android:layout_width='match_parent'
+                    android:layout_height='wrap_content'
+                    android:layout_marginTop='8dp'
+                    android:background='@drawable/bg_neu_soft'
+                    android:padding='12dp'
+                    android:text='🌙  深色主题'
+                    android:textColor='@color/text_primary' />
+
+                <TextView
+                    android:id='@+id/drawerThemeSystem'
+                    style='@style/TextAppearance.Material3.BodyLarge'
+                    android:layout_width='match_parent'
+                    android:layout_height='wrap_content'
+                    android:layout_marginTop='8dp'
+                    android:background='@drawable/bg_neu_soft'
+                    android:padding='12dp'
+                    android:text='📱  跟随系统'
+                    android:textColor='@color/text_primary' />
+
+                <TextView
+                    android:id='@+id/drawerAccentTitle'
+                    android:layout_width='wrap_content'
+                    android:layout_height='wrap_content'
+                    android:layout_marginTop='16dp'
+                    android:text='主题色'
+                    android:textColor='@color/text_primary'
+                    android:textSize='16sp'
+                    android:textStyle='bold' />
+
+                <TextView
+                    android:id='@+id/drawerAccentToggle'
+                    style='@style/TextAppearance.Material3.BodyLarge'
+                    android:layout_width='match_parent'
+                    android:layout_height='wrap_content'
+                    android:layout_marginTop='10dp'
+                    android:background='@drawable/bg_neu_soft'
+                    android:padding='12dp'
+                    android:text='展开主题色 ▾'
+                    android:textColor='@color/text_primary' />
+
+                <LinearLayout
+                    android:id='@+id/drawerAccentContainer'
+                    android:layout_width='match_parent'
+                    android:layout_height='wrap_content'
+                    android:orientation='vertical'
+                    android:visibility='gone'>
+
+                    <TextView
+                        android:id='@+id/drawerAccentRed'
+                        style='@style/TextAppearance.Material3.BodyLarge'
+                        android:layout_width='match_parent'
+                        android:layout_height='wrap_content'
+                        android:layout_marginTop='8dp'
+                        android:background='@drawable/bg_neu_soft'
+                        android:padding='12dp'
+                        android:text='🌺  朱砂'
+                        android:textColor='@color/text_primary' />
+
+                    <TextView
+                        android:id='@+id/drawerAccentOrange'
+                        style='@style/TextAppearance.Material3.BodyLarge'
+                        android:layout_width='match_parent'
+                        android:layout_height='wrap_content'
+                        android:layout_marginTop='8dp'
+                        android:background='@drawable/bg_neu_soft'
+                        android:padding='12dp'
+                        android:text='🍊  金橘'
+                        android:textColor='@color/text_primary' />
+
+                    <TextView
+                        android:id='@+id/drawerAccentYellow'
+                        style='@style/TextAppearance.Material3.BodyLarge'
+                        android:layout_width='match_parent'
+                        android:layout_height='wrap_content'
+                        android:layout_marginTop='8dp'
+                        android:background='@drawable/bg_neu_soft'
+                        android:padding='12dp'
+                        android:text='🌻  杏黄'
+                        android:textColor='@color/text_primary' />
+
+                    <TextView
+                        android:id='@+id/drawerAccentGreen'
+                        style='@style/TextAppearance.Material3.BodyLarge'
+                        android:layout_width='match_parent'
+                        android:layout_height='wrap_content'
+                        android:layout_marginTop='8dp'
+                        android:background='@drawable/bg_neu_soft'
+                        android:padding='12dp'
+                        android:text='🎋  翠竹'
+                        android:textColor='@color/text_primary' />
+
+                    <TextView
+                        android:id='@+id/drawerAccentBlue'
+                        style='@style/TextAppearance.Material3.BodyLarge'
+                        android:layout_width='match_parent'
+                        android:layout_height='wrap_content'
+                        android:layout_marginTop='8dp'
+                        android:background='@drawable/bg_neu_soft'
+                        android:padding='12dp'
+                        android:text='🌊  天青'
+                        android:textColor='@color/text_primary' />
+
+                    <TextView
+                        android:id='@+id/drawerAccentIndigo'
+                        style='@style/TextAppearance.Material3.BodyLarge'
+                        android:layout_width='match_parent'
+                        android:layout_height='wrap_content'
+                        android:layout_marginTop='8dp'
+                        android:background='@drawable/bg_neu_soft'
+                        android:padding='12dp'
+                        android:text='💜  黛紫'
+                        android:textColor='@color/text_primary' />
+
+                    <TextView
+                        android:id='@+id/drawerAccentPurple'
+                        style='@style/TextAppearance.Material3.BodyLarge'
+                        android:layout_width='match_parent'
+                        android:layout_height='wrap_content'
+                        android:layout_marginTop='8dp'
+                        android:background='@drawable/bg_neu_soft'
+                        android:padding='12dp'
+                        android:text='💎  紫罗兰'
+                        android:textColor='@color/text_primary' />
+                </LinearLayout>
+
+                <TextView
+                    android:id='@+id/drawerEventTitle'
+                    android:layout_width='wrap_content'
+                    android:layout_height='wrap_content'
+                    android:layout_marginTop='18dp'
+                    android:text='事件列表'
+                    android:textColor='@color/text_primary'
+                    android:textSize='16sp'
+                    android:textStyle='bold' />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id='@+id/drawerEventRecycler'
+                    android:layout_width='match_parent'
+                    android:layout_height='wrap_content'
+                    android:layout_marginTop='8dp'
+                    android:nestedScrollingEnabled='false' />
+
+                <TextView
+                    android:id='@+id/drawerAddEvent'
+                    style='@style/TextAppearance.Material3.BodyLarge'
+                    android:layout_width='match_parent'
+                    android:layout_height='wrap_content'
+                    android:layout_marginTop='10dp'
+                    android:background='@drawable/bg_neu_soft'
+                    android:padding='12dp'
+                    android:text='+ 新增事件'
+                    android:textColor='@color/text_primary' />
+
+                <TextView
+                    android:id='@+id/drawerAbout'
+                    style='@style/TextAppearance.Material3.BodyLarge'
+                    android:layout_width='match_parent'
+                    android:layout_height='wrap_content'
+                    android:layout_marginTop='18dp'
+                    android:background='@drawable/bg_neu_soft'
+                    android:padding='12dp'
+                    android:text='关于'
+                    android:textColor='@color/text_primary' />
+            </LinearLayout>
+        </ScrollView>
+    </LinearLayout>
+
+</androidx.drawerlayout.widget.DrawerLayout>

@@ -1,0 +1,12 @@
+# Gradle
+.gradle/
+build/
+gradle-9.3.1-bin.zip
+local.properties
+
+# OS
+.DS_Store
+*.DS_Store
+
+# IDE
+.idea/
