@@ -1,0 +1,188 @@
+<?xml version='1.0' encoding='utf-8'?>
+<LinearLayout xmlns:android='http://schemas.android.com/apk/res/android'
+    android:layout_width='match_parent'
+    android:layout_height='wrap_content'
+    android:orientation='vertical'
+    android:padding='18dp'
+    android:background='@drawable/share_card_bg'>
+
+    <TextView
+        android:id='@+id/shareTitle'
+        android:layout_width='wrap_content'
+        android:layout_height='wrap_content'
+        android:text='周期倒计时'
+        android:textColor='@color/white'
+        android:textSize='18sp'
+        android:textStyle='bold' />
+
+    <TextView
+        android:id='@+id/shareSubtitle'
+        android:layout_width='wrap_content'
+        android:layout_height='wrap_content'
+        android:layout_marginTop='4dp'
+        android:text='专属事件：'
+        android:textColor='@color/white'
+        android:textSize='13sp'
+        android:alpha='0.9' />
+
+    <LinearLayout
+        android:layout_width='match_parent'
+        android:layout_height='wrap_content'
+        android:orientation='horizontal'
+        android:gravity='center_vertical'
+        android:layout_marginTop='18dp'>
+
+        <LinearLayout
+            android:layout_width='0dp'
+            android:layout_height='wrap_content'
+            android:layout_weight='1'
+            android:orientation='vertical'>
+
+            <TextView
+                android:layout_width='wrap_content'
+                android:layout_height='wrap_content'
+                android:text='剩余'
+                android:textColor='@color/white'
+                android:textSize='13sp'
+                android:alpha='0.8' />
+
+            <TextView
+                android:id='@+id/shareDaysLeft'
+                android:layout_width='wrap_content'
+                android:layout_height='wrap_content'
+                android:text='12'
+                android:textColor='@color/white'
+                android:textSize='54sp'
+                android:textStyle='bold' />
+
+            <TextView
+                android:layout_width='wrap_content'
+                android:layout_height='wrap_content'
+                android:text='天'
+                android:textColor='@color/white'
+                android:textSize='13sp'
+                android:alpha='0.8' />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width='0dp'
+            android:layout_height='wrap_content'
+            android:layout_weight='1'
+            android:orientation='vertical'
+            android:padding='12dp'
+            android:background='@drawable/share_card_chip'>
+
+            <TextView
+                android:id='@+id/shareNextDate'
+                android:layout_width='wrap_content'
+                android:layout_height='wrap_content'
+                android:text='2026-04-01'
+                android:textColor='@color/text_primary'
+                android:textSize='16sp'
+                android:textStyle='bold' />
+
+            <TextView
+                android:layout_width='wrap_content'
+                android:layout_height='wrap_content'
+                android:text='预期日期'
+                android:textColor='@color/text_secondary'
+                android:textSize='12sp' />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width='match_parent'
+        android:layout_height='wrap_content'
+        android:layout_marginTop='14dp'
+        android:orientation='horizontal'
+        android:weightSum='3'>
+
+        <LinearLayout
+            android:layout_width='0dp'
+            android:layout_height='wrap_content'
+            android:layout_weight='1'
+            android:orientation='vertical'>
+            <TextView
+                android:id='@+id/shareAvgCycle'
+                android:layout_width='wrap_content'
+                android:layout_height='wrap_content'
+                android:text='28天'
+                android:textColor='@color/white'
+                android:textSize='16sp'
+                android:textStyle='bold' />
+            <TextView
+                android:layout_width='wrap_content'
+                android:layout_height='wrap_content'
+                android:text='平均周期'
+                android:textColor='@color/white'
+                android:textSize='12sp'
+                android:alpha='0.8' />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width='0dp'
+            android:layout_height='wrap_content'
+            android:layout_weight='1'
+            android:orientation='vertical'>
+            <TextView
+                android:id='@+id/shareLastDate'
+                android:layout_width='wrap_content'
+                android:layout_height='wrap_content'
+                android:text='2026-03-01'
+                android:textColor='@color/white'
+                android:textSize='16sp'
+                android:textStyle='bold' />
+            <TextView
+                android:layout_width='wrap_content'
+                android:layout_height='wrap_content'
+                android:text='最近记录'
+                android:textColor='@color/white'
+                android:textSize='12sp'
+                android:alpha='0.8' />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width='0dp'
+            android:layout_height='wrap_content'
+            android:layout_weight='1'
+            android:orientation='vertical'>
+            <TextView
+                android:id='@+id/shareSamples'
+                android:layout_width='wrap_content'
+                android:layout_height='wrap_content'
+                android:text='6次'
+                android:textColor='@color/white'
+                android:textSize='16sp'
+                android:textStyle='bold' />
+            <TextView
+                android:layout_width='wrap_content'
+                android:layout_height='wrap_content'
+                android:text='样本数'
+                android:textColor='@color/white'
+                android:textSize='12sp'
+                android:alpha='0.8' />
+        </LinearLayout>
+    </LinearLayout>
+
+    <TextView
+        android:id='@+id/shareIntervals'
+        android:layout_width='match_parent'
+        android:layout_height='wrap_content'
+        android:layout_marginTop='16dp'
+        android:text='最近间隔：28 · 30 · 26 · 27'
+        android:textColor='@color/white'
+        android:textSize='13sp'
+        android:alpha='0.85' />
+
+    <TextView
+        android:id='@+id/shareFooter'
+        android:layout_width='match_parent'
+        android:layout_height='wrap_content'
+        android:layout_marginTop='12dp'
+        android:text='iPredict · 记录周期 · 更懂自己'
+        android:textColor='@color/white'
+        android:textSize='12sp'
+        android:alpha='0.7'
+        android:gravity='end' />
+
+</LinearLayout>

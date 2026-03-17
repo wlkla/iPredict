@@ -1,51 +1,30 @@
 package com.lkl.ipredict.ui
 
 import android.animation.ValueAnimator
-import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AccelerateDecelerateInterpolator
-import android.widget.NumberPicker
-import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.switchmaterial.SwitchMaterial
-import com.google.android.material.timepicker.MaterialTimePicker
-import com.google.android.material.timepicker.TimeFormat
 import com.lkl.ipredict.R
 import com.lkl.ipredict.data.EventRepository
 import com.lkl.ipredict.databinding.FragmentCountdownBinding
 import com.lkl.ipredict.util.CycleCalculator
 import com.lkl.ipredict.util.DateUtils
-import com.lkl.ipredict.util.ReminderConfig
-import com.lkl.ipredict.util.ReminderScheduler
 import com.lkl.ipredict.util.ShareImageUtils
 import kotlin.math.roundToInt
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import androidx.viewpager2.widget.ViewPager2
 
 class CountdownFragment : Fragment(), AccentAware {
 
     private var _binding: FragmentCountdownBinding? = null
     private val binding get() = _binding!!
     private var ringAnimator: ValueAnimator? = null
-    private var pendingScheduleConfig: ReminderConfig? = null
-
-    private val requestNotificationPermission =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-            val config = pendingScheduleConfig
-            if (granted && config != null) {
-                saveReminderConfig(config)
-                ReminderScheduler.updateSchedule(requireContext())
-            } else if (!granted && config != null) {
-                Toast.makeText(requireContext(), "未授予通知权限，提醒未开启", Toast.LENGTH_SHORT).show()
-                saveReminderConfig(config.copy(enabled = false))
-            }
-            pendingScheduleConfig = null
-        }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -72,16 +51,14 @@ class CountdownFragment : Fragment(), AccentAware {
         }
 
         binding.btnShareCountdown.setOnClickListener {
-            ShareImageUtils.shareViewAsImage(
-                context = requireContext(),
-                view = binding.cardCountdown,
-                fileName = "countdown_snapshot.png",
-                chooserTitle = "分享倒计时图片"
-            )
-        }
-
-        binding.btnReminderSettings.setOnClickListener {
-            showReminderDialog()
+            val dates = EventRepository.getDates(requireContext())
+            val state = CycleCalculator.countdownState(dates)
+            val intervals = CycleCalculator.intervals(dates).filter { it > 0 }
+            if (state == null) {
+                Toast.makeText(requireContext(), "至少需要 2 条记录才能分享", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            showShareThemePicker(state, dates, intervals)
         }
 
         binding.btnGoDates.setOnClickListener {
@@ -129,7 +106,6 @@ class CountdownFragment : Fragment(), AccentAware {
                 "还需再记录一次，才能计算周期"
             }
             binding.txtSummary.text = "记录次数：${dates.size}"
-            ReminderScheduler.updateSchedule(requireContext())
             return
         }
 
@@ -157,9 +133,6 @@ class CountdownFragment : Fragment(), AccentAware {
             binding.txtNextDate.text = "已过期：${state.nextDate}"
         }
         binding.txtSummary.text = "平均周期 ${state.averageCycle} 天，距离上次已 ${state.daysSinceLast} 天"
-
-        // 每次渲染时同步更新提醒计划
-        ReminderScheduler.updateSchedule(requireContext())
     }
 
     private fun animateRing(fromDegree: Int, toDegree: Int) {
@@ -179,88 +152,6 @@ class CountdownFragment : Fragment(), AccentAware {
         }
     }
 
-    private fun showReminderDialog() {
-        val context = requireContext()
-        val eventName = EventRepository.getCurrentEventName(context)
-        val config = ReminderScheduler.getConfig(context, eventName)
-
-        val dialogView = layoutInflater.inflate(R.layout.dialog_reminder_settings, null)
-        val switchEnable = dialogView.findViewById<SwitchMaterial>(R.id.switchEnable)
-        val pickerLead = dialogView.findViewById<NumberPicker>(R.id.pickerLeadDays)
-        val txtTime = dialogView.findViewById<TextView>(R.id.txtReminderTime)
-
-        switchEnable.isChecked = config.enabled
-        pickerLead.minValue = 0
-        pickerLead.maxValue = 30
-        pickerLead.value = config.leadDays
-
-        var selectedHour = config.hour
-        var selectedMinute = config.minute
-
-        fun refreshTimeLabel() {
-            txtTime.text = String.format("%02d:%02d", selectedHour, selectedMinute)
-        }
-        refreshTimeLabel()
-
-        txtTime.setOnClickListener {
-            val picker = MaterialTimePicker.Builder()
-                .setTimeFormat(TimeFormat.CLOCK_24H)
-                .setHour(selectedHour)
-                .setMinute(selectedMinute)
-                .setTitleText("选择提醒时间")
-                .build()
-            picker.addOnPositiveButtonClickListener {
-                selectedHour = picker.hour
-                selectedMinute = picker.minute
-                refreshTimeLabel()
-            }
-            picker.show(parentFragmentManager, "time_picker")
-        }
-
-        MaterialAlertDialogBuilder(context, R.style.ThemeOverlayIPredictDialog)
-            .setTitle("倒计时提醒")
-            .setView(dialogView)
-            .setNegativeButton("取消", null)
-            .setPositiveButton("保存") { _, _ ->
-                val newConfig = ReminderConfig(
-                    enabled = switchEnable.isChecked,
-                    leadDays = pickerLead.value,
-                    hour = selectedHour,
-                    minute = selectedMinute
-                )
-                handleReminderSave(newConfig)
-            }
-            .show()
-    }
-
-    private fun handleReminderSave(config: ReminderConfig) {
-        if (!config.enabled) {
-            saveReminderConfig(config)
-            ReminderScheduler.updateSchedule(requireContext())
-            Toast.makeText(requireContext(), "已关闭提醒", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            val granted = requireContext().checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) ==
-                    android.content.pm.PackageManager.PERMISSION_GRANTED
-            if (!granted) {
-                pendingScheduleConfig = config
-                requestNotificationPermission.launch(android.Manifest.permission.POST_NOTIFICATIONS)
-                return
-            }
-        }
-
-        saveReminderConfig(config)
-        ReminderScheduler.updateSchedule(requireContext())
-        Toast.makeText(requireContext(), "提醒已更新", Toast.LENGTH_SHORT).show()
-    }
-
-    private fun saveReminderConfig(config: ReminderConfig) {
-        val eventName = EventRepository.getCurrentEventName(requireContext())
-        ReminderScheduler.saveConfig(requireContext(), eventName, config)
-    }
-
     override fun onDestroyView() {
         ringAnimator?.cancel()
         ringAnimator = null
@@ -272,5 +163,50 @@ class CountdownFragment : Fragment(), AccentAware {
         if (_binding != null) {
             render()
         }
+    }
+
+    private fun showShareThemePicker(state: com.lkl.ipredict.util.CountdownState, dates: List<String>, intervals: List<Int>) {
+        val context = requireContext()
+        val themes = ShareImageUtils.themes(context)
+        val previews = themes.mapNotNull { theme ->
+            val bmp = ShareImageUtils.buildCountdownCardBitmap(
+                context = context,
+                eventName = EventRepository.getCurrentEventName(context),
+                daysLeft = state.daysLeft,
+                nextDate = state.nextDate,
+                averageCycle = state.averageCycle,
+                latestDate = dates.firstOrNull(),
+                intervals = intervals,
+                theme = theme
+            )
+            bmp
+        }
+        if (previews.isEmpty()) return
+
+        val dialog = BottomSheetDialog(context)
+        val view = layoutInflater.inflate(R.layout.dialog_share_theme, null)
+        val pager = view.findViewById<ViewPager2>(R.id.pagerPreview)
+        val btnShare = view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnShareConfirm)
+
+        val adapter = SharePreviewPagerAdapter(previews)
+        pager.adapter = adapter
+        pager.offscreenPageLimit = 1
+        var currentIndex = 0
+        pager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                currentIndex = position
+            }
+        })
+
+        btnShare.setOnClickListener {
+            val selected = previews[currentIndex]
+            ShareImageUtils.shareBitmap(context, selected, "countdown_share.png", "分享周期倒计时")
+            dialog.dismiss()
+        }
+
+        dialog.setContentView(view)
+        dialog.behavior.peekHeight = (resources.displayMetrics.heightPixels * 0.85f).toInt()
+        dialog.behavior.state = BottomSheetBehavior.STATE_EXPANDED
+        dialog.show()
     }
 }

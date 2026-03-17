@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='utf-8'?>
+<LinearLayout xmlns:android='http://schemas.android.com/apk/res/android'
+    xmlns:app='http://schemas.android.com/apk/res-auto'
+    android:layout_width='match_parent'
+    android:layout_height='wrap_content'
+    android:orientation='vertical'
+    android:padding='16dp'>
+
+    <TextView
+        android:layout_width='match_parent'
+        android:layout_height='wrap_content'
+        android:text='选择分享主题'
+        android:textColor='@color/text_primary'
+        android:textSize='16sp'
+        android:textStyle='bold' />
+
+    <androidx.viewpager2.widget.ViewPager2
+        android:id='@+id/pagerPreview'
+        android:layout_width='match_parent'
+        android:layout_height='420dp'
+        android:layout_marginTop='16dp'
+        android:clipToPadding='false'
+        android:paddingHorizontal='12dp' />
+
+    <com.google.android.material.button.MaterialButton
+        android:id='@+id/btnShareConfirm'
+        style='@style/Widget.IPredict.ActionButton'
+        android:layout_width='match_parent'
+        android:layout_height='48dp'
+        android:layout_marginTop='12dp'
+        android:minHeight='0dp'
+        android:text='分享'
+        app:cornerRadius='18dp' />
+
+</LinearLayout>

@@ -5,8 +5,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import android.widget.TextView
+import android.widget.ImageView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.viewpager2.widget.ViewPager2
 import com.lkl.ipredict.R
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.components.Description
@@ -26,11 +30,12 @@ import com.github.mikephil.charting.formatter.ValueFormatter
 import com.github.mikephil.charting.highlight.Highlight
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener
 import com.github.mikephil.charting.animation.Easing
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.lkl.ipredict.data.EventRepository
 import com.lkl.ipredict.databinding.FragmentAnalysisBinding
 import com.lkl.ipredict.util.ShareImageUtils
 import com.lkl.ipredict.util.CycleCalculator
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import kotlin.math.roundToInt
 
 class AnalysisFragment : Fragment(), AccentAware {
@@ -39,6 +44,7 @@ class AnalysisFragment : Fragment(), AccentAware {
     private val binding get() = _binding!!
 
     private var latestDistribution: List<Pair<Int, Int>> = emptyList()
+    private var latestIntervals: List<Int> = emptyList()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -52,39 +58,9 @@ class AnalysisFragment : Fragment(), AccentAware {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.btnShareAnalysis.setOnClickListener {
-            showShareOptions()
+            shareBeautified()
         }
         setupChartInteractions()
-    }
-
-    private fun showShareOptions() {
-        val options = arrayOf("折线图", "柱状图", "饼图")
-        MaterialAlertDialogBuilder(requireContext())
-            .setTitle("选择分享内容")
-            .setItems(options) { _, which ->
-                when (which) {
-                    0 -> ShareImageUtils.shareViewAsImage(
-                        context = requireContext(),
-                        view = binding.cardLineChart,
-                        fileName = "analysis_line.png",
-                        chooserTitle = "分享折线图"
-                    )
-                    1 -> ShareImageUtils.shareViewAsImage(
-                        context = requireContext(),
-                        view = binding.cardBarChart,
-                        fileName = "analysis_bar.png",
-                        chooserTitle = "分享柱状图"
-                    )
-                    2 -> ShareImageUtils.shareViewAsImage(
-                        context = requireContext(),
-                        view = binding.cardPieChart,
-                        fileName = "analysis_pie.png",
-                        chooserTitle = "分享饼图"
-                    )
-                }
-            }
-            .setNegativeButton("取消", null)
-            .show()
     }
 
     override fun onResume() {
@@ -136,7 +112,7 @@ class AnalysisFragment : Fragment(), AccentAware {
 
     private fun render() {
         val dates = EventRepository.getDates(requireContext())
-        val latestIntervals = CycleCalculator.intervals(dates).filter { it > 0 }
+        latestIntervals = CycleCalculator.intervals(dates).filter { it > 0 }
         latestDistribution = latestIntervals
             .groupingBy { it }
             .eachCount()
@@ -315,5 +291,71 @@ class AnalysisFragment : Fragment(), AccentAware {
         if (_binding != null) {
             render()
         }
+    }
+
+    private fun shareBeautified() {
+        val dates = EventRepository.getDates(requireContext())
+        if (latestIntervals.isEmpty()) {
+            Toast.makeText(requireContext(), "暂无数据可分享", Toast.LENGTH_SHORT).show()
+            return
+        }
+        showShareThemePicker(dates)
+    }
+
+    private fun showShareThemePicker(dates: List<String>) {
+        val context = requireContext()
+        val themes = ShareImageUtils.themes(context)
+        val lineBmp = ShareImageUtils.buildBitmapFromView(binding.lineChart) ?: return
+        val barBmp = ShareImageUtils.buildBitmapFromView(binding.barChart) ?: return
+        val pieBmp = ShareImageUtils.buildBitmapFromView(binding.pieChart) ?: return
+        val previews = themes.mapNotNull { theme ->
+            ShareImageUtils.buildBitmapFromLayout(
+                context,
+                R.layout.share_card_analysis,
+                theme
+            ) { view ->
+                view.findViewById<TextView>(R.id.shareAnalysisTitle).text = "周期分析"
+                view.findViewById<TextView>(R.id.shareAnalysisSubtitle).text = "事件：${EventRepository.getCurrentEventName(context)}"
+                view.findViewById<TextView>(R.id.shareAnalysisAvg).text =
+                    if (latestIntervals.isEmpty()) "--" else "${latestIntervals.average().roundToInt()}天"
+                view.findViewById<TextView>(R.id.shareAnalysisSamples).text = "${latestIntervals.size}次"
+                view.findViewById<TextView>(R.id.shareAnalysisLatest).text = dates.firstOrNull() ?: "--"
+                view.findViewById<TextView>(R.id.shareAnalysisIntervals).text = if (latestIntervals.isEmpty()) {
+                    "最近间隔：暂无数据"
+                } else {
+                    "最近间隔：" + latestIntervals.take(6).joinToString(" · ") { "${it}天" }
+                }
+                view.findViewById<TextView>(R.id.shareAnalysisFooter).text = "iPredict · 数据可视化"
+                view.findViewById<ImageView>(R.id.shareLineImage).setImageBitmap(lineBmp)
+                view.findViewById<ImageView>(R.id.shareBarImage).setImageBitmap(barBmp)
+                view.findViewById<ImageView>(R.id.sharePieImage).setImageBitmap(pieBmp)
+            }
+        }
+        if (previews.isEmpty()) return
+
+        val dialog = BottomSheetDialog(context)
+        val view = layoutInflater.inflate(R.layout.dialog_share_theme, null)
+        val pager = view.findViewById<ViewPager2>(R.id.pagerPreview)
+        val btnShare = view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnShareConfirm)
+
+        val adapter = SharePreviewPagerAdapter(previews)
+        pager.adapter = adapter
+        pager.offscreenPageLimit = 1
+        var currentIndex = 0
+        pager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                currentIndex = position
+            }
+        })
+
+        btnShare.setOnClickListener {
+            val selected = previews[currentIndex]
+            ShareImageUtils.shareBitmap(context, selected, "analysis_share.png", "分享周期分析")
+            dialog.dismiss()
+        }
+        dialog.setContentView(view)
+        dialog.behavior.peekHeight = (resources.displayMetrics.heightPixels * 0.85f).toInt()
+        dialog.behavior.state = BottomSheetBehavior.STATE_EXPANDED
+        dialog.show()
     }
 }
