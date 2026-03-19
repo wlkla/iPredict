@@ -44,13 +44,21 @@
                 android:id='@+id/btnImport'
                 style='@style/Widget.IPredict.SmallButton'
                 android:layout_marginEnd='8dp'
-                android:text='导入'
+                android:layout_width='48dp'
+                android:layout_height='40dp'
+                android:gravity='center'
+                android:text=''
+                android:contentDescription='导入'
                 app:icon='@drawable/ic_import_standard' />
 
             <com.google.android.material.button.MaterialButton
                 android:id='@+id/btnExport'
                 style='@style/Widget.IPredict.SmallButton'
-                android:text='导出'
+                android:layout_width='48dp'
+                android:layout_height='40dp'
+                android:gravity='center'
+                android:text=''
+                android:contentDescription='导出'
                 app:icon='@drawable/ic_export_standard' />
         </LinearLayout>
 
