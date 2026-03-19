@@ -45,13 +45,13 @@
                 style='@style/Widget.IPredict.SmallButton'
                 android:layout_marginEnd='8dp'
                 android:text='导入'
-                app:icon='@android:drawable/ic_input_get' />
+                app:icon='@drawable/ic_import_standard' />
 
             <com.google.android.material.button.MaterialButton
                 android:id='@+id/btnExport'
                 style='@style/Widget.IPredict.SmallButton'
                 android:text='导出'
-                app:icon='@android:drawable/ic_menu_save' />
+                app:icon='@drawable/ic_export_standard' />
         </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView
@@ -71,7 +71,7 @@
         android:layout_gravity='bottom|end'
         android:layout_margin='20dp'
         android:contentDescription='add'
-        android:src='@android:drawable/ic_input_add'
+        android:src='@drawable/ic_add_standard'
         app:backgroundTint='@color/card_bg'
         app:borderWidth='1dp'
         app:elevation='8dp'

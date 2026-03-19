@@ -38,7 +38,7 @@
                 android:layout_width='24dp'
                 android:layout_height='24dp'
                 android:contentDescription='share'
-                android:src='@drawable/ic_share_hd'
+                android:src='@drawable/ic_share_standard'
                 app:tint='@color/text_primary' />
         </LinearLayout>
 

@@ -26,7 +26,7 @@
                 android:background='@android:color/transparent'
                 android:contentDescription='@string/menu'
                 android:padding='8dp'
-                android:src='@drawable/ic_drawer_menu_hd'
+                android:src='@drawable/ic_menu_standard'
                 app:tint='@color/text_primary' />
 
             <TextView
