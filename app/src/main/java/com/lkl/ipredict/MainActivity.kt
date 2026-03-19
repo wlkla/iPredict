@@ -338,7 +338,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showFragment(fragment: Fragment, title: String) {
-        binding.toolbarTitle.text = title
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragmentContainer, fragment)
             .commit()
