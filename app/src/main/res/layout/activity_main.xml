@@ -14,9 +14,9 @@
             android:id='@+id/toolbar'
             android:layout_width='match_parent'
             android:layout_height='72dp'
-            android:background='@color/page_bg'
+            android:background='@drawable/bg_glass_toolbar'
             app:contentInsetStart='0dp'
-            app:elevation='0dp'>
+            app:elevation='4dp'>
 
             <ImageButton
                 android:id='@+id/navIcon'
@@ -57,7 +57,7 @@
             android:id='@+id/bottomNav'
             android:layout_width='match_parent'
             android:layout_height='wrap_content'
-            android:background='@color/page_bg'
+            android:background='@drawable/bg_glass_nav'
             app:itemIconTint='@color/bottom_nav_color'
             app:itemTextColor='@color/bottom_nav_color'
             app:labelVisibilityMode='labeled'
